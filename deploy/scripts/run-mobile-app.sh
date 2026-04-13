@@ -132,6 +132,40 @@ recover_adb_connectivity() {
     adb reconnect >/dev/null 2>&1 || true
 }
 
+ensure_adb_device_health() {
+    local device="$1"
+
+    if [[ -z "$device" ]]; then
+        return 0
+    fi
+
+    # Non-disruptive fast path: keep an already healthy wireless ADB session intact.
+    if is_device_online "$device" && adb -s "$device" shell true >/dev/null 2>&1; then
+        return 0
+    fi
+
+    echo "🩺 Recovering and validating ADB transport for '$device'..."
+    adb start-server >/dev/null 2>&1 || true
+    adb -s "$device" reconnect >/dev/null 2>&1 || true
+    if ! is_device_online "$device"; then
+        # Fallback to broader recovery only when targeted reconnect did not restore transport.
+        recover_adb_connectivity
+    fi
+
+    local attempt=0
+    while (( attempt < 5 )); do
+        if is_device_online "$device" && adb -s "$device" shell true >/dev/null 2>&1; then
+            return 0
+        fi
+
+        sleep 1
+        (( attempt++ ))
+    done
+
+    echo "⚠️  Device '$device' did not pass the ADB health check before deployment."
+    return 1
+}
+
 resolve_online_target_device() {
     local requested_device="$1"
 
@@ -320,6 +354,13 @@ run_maui_target() {
     local run_log=""
 
     run_log="$(mktemp -t gtek-mobile-run.XXXXXX.log)"
+
+    if [[ -n "$target_device" ]]; then
+        if ! ensure_adb_device_health "$target_device"; then
+            rm -f "$run_log"
+            return 1
+        fi
+    fi
 
     if dotnet maui --help >/dev/null 2>&1; then
         if [[ -n "$target_device" ]]; then

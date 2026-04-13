@@ -47,6 +47,7 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 **Current State:** Manual onboarding process; operator provisions database, creates tenant record, issues JWT credentials.
 
 **Future Goals:**
+
 - Self-service tenant registration API (Phase 12.5.1)
 - Automated database provisioning or database-as-a-service integration (Phase 13)
 - Customizable subscription plans and tier-based feature access (Phase 14)
@@ -59,6 +60,7 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 **Current State:** Shared database/schema model with TenantId discriminator; tenant-aware authorization policies; no per-tenant resource quotas.
 
 **Future Goals:**
+
 - Database-per-tenant isolation option for compliance-sensitive tenants (Phase 13+)
 - Row-level security (RLS) policies as isolation assurance mechanism (Phase 13)
 - Tenant-specific encryption keys (Phase 14)
@@ -72,6 +74,7 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 **Current State:** Monolithic administration; single authorization model; limited tenant-specific governance.
 
 **Future Goals:**
+
 - Tenant-specific administrative roles and policies (Phase 12.7)
 - Delegated admin capabilities (tenant admins manage their own users/data without platform admin intervention) (Phase 13)
 - Quota monitoring and enforcement (active jobs, concurrent workers, API rate limits) (Phase 13+)
@@ -85,6 +88,7 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 **Current State:** Centralized observability; audit logs queryable by tenant; single retention policy for all tenants.
 
 **Future Goals:**
+
 - Tenant-specific observability dashboards and metrics exports (Phase 13+)
 - Tenant-customizable retention policies (Phase 13+)
 - Compliance report generation (SOC 2, HIPAA attestation templates) (Phase 14+)
@@ -97,6 +101,7 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 **Current State:** Single database instance per environment; batch job processing; limited federation.
 
 **Future Goals:**
+
 - Database sharding strategy for storage growth beyond single-instance limits (Phase 14+)
 - Read replicas for analytics workloads without impacting operational database (Phase 13+)
 - Distributed job processing (Phase 14+)
@@ -111,23 +116,29 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 ### Phase 12 (Current): Foundation & Early Automation
 
 #### 12.5.1 — Self-Service Tenant Onboarding API
+
 - **Objective:** Enable software to request tenant provisioning without manual intervention
 - **Success Criteria:**
+
   - REST API endpoint accepts tenant registration request (name, plan tier, admin email)
   - Tenant record created; database provisioned (initial schema applied)
   - JWT credentials issued and sent to admin email
   - Audit log captures onboarding event
   - End-to-end integration tests validate registration flow
+
 - **Prerequisites:** Phases 0–11 complete
 - **Dependencies:** None (can run in parallel with other Phase 12 work)
 - **Estimated Scope:** Backend API, integration tests, documentation
 - **Readiness Gates:**
+
   - Entry: Phase 11 complete, tenant isolation audit passed, security review approved
   - Exit: Onboarding API tested end-to-end, audit logging covers all tenant CRUD, compliance impact doc updated
 
 #### 12.6 — Multi-Factor Authentication & Tenant-Specific SSO
+
 - **Objective:** Enable tenant-specific identity providers; strengthen authentication posture
 - **Success Criteria:**
+
   - MFA setup UI in management portal
   - SSO configuration API (OAuth2/OIDC endpoints configurable per-tenant)
   - Token refresh logic maintains tenant context through OAuth flow
@@ -136,12 +147,15 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 - **Dependencies:** None (can run in parallel)
 - **Estimated Scope:** Backend identity service extensions, portal MFA/SSO settings component, integration & E2E tests
 - **Readiness Gates:**
+
   - Entry: Security architecture review approved, MFA library selection finalized
   - Exit: SSO integration tested with mock IdP, MFA enrollment/recovery tested, security audit passed
 
 #### 12.7 — Tenant-Specific Administrative Roles
+
 - **Objective:** Enable tenants to define and enforce role-based access control within their account
 - **Success Criteria:**
+
   - Tenant admin can define custom roles and assign permissions to users
   - Authorization checks at API request boundary enforce tenant-specific roles
   - Audit log records role changes and permission decisions
@@ -150,6 +164,7 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 - **Dependencies:** None
 - **Estimated Scope:** Backend authorization service, role/permission schema, portal admin interface, compliance tests
 - **Readiness Gates:**
+
   - Entry: Authorization architecture review
   - Exit: Custom roles created and enforced, audit events confirmed, security test suite passes
 
@@ -158,6 +173,7 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 ### Phase 13+: Mid-Term Scaling & Enterprise Hardening
 
 #### 13.1 — Database-Per-Tenant Isolation Option
+
 - **Objective:** Support database-per-tenant deployment model for compliance-sensitive workloads
 - **Success Criteria:**
   - Onboarding API accepts isolation strategy selector (shared vs. dedicated)
@@ -173,8 +189,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: Both shared & dedicated isolation options successfully deployed to staging, schema consistency verified, production runbook documented
 
 #### 13.2 — Row-Level Security (RLS) Policies
+
 - **Objective:** Introduce SQL Server RLS as an additional isolation enforcement layer
 - **Success Criteria:**
+
   - RLS policies created for all tables filtering by TenantId
   - SQL Server predicate logic enforced alongside application-layer filtering
   - Performance impact assessed and optimized (indexed predicates, execution plan review)
@@ -187,8 +205,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: RLS policies in place, query performance validated, production deploy guide documented
 
 #### 13.3 — Tenant-Specific Observability Dashboards
+
 - **Objective:** Provide each tenant with visibility into their own operational metrics
 - **Success Criteria:**
+
   - Metrics aggregated and filtered by TenantId
   - Portal dashboard component renders tenant-scoped metrics
   - Metrics export API available (CSV/JSON)
@@ -201,8 +221,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: Metrics dashboard rendered correctly per-tenant, export validated, performance benchmarked
 
 #### 13.4 — Quota Monitoring & Enforcement
+
 - **Objective:** Enforce tenant-specific limits on active jobs, concurrent workers, API requests
 - **Success Criteria:**
+
   - Tenant quota configuration stored and enforced
   - API request rate limiter blocks requests beyond quota
   - Active job counter prevents exceeding job limit
@@ -220,8 +242,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 ### Phase 14+: Enterprise & Scaling Maturity
 
 #### 14.1 — Billing & Usage Metering
+
 - **Objective:** Enable consumption-based billing; meter usage per tenant
 - **Success Criteria:**
+
   - Meter records created for all billable events (API calls, job executions, data storage)
   - Metrics aggregated to billing dimension (monthly usage by tenant)
   - Billing reports generated and exportable
@@ -234,8 +258,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: Metering tested end-to-end, billing reports accurate, payment flow tested with sandbox
 
 #### 14.2 — Compliance Report Generation
+
 - **Objective:** Enable automated compliance attestation (SOC 2, HIPAA, GDPR)
 - **Success Criteria:**
+
   - Report templates for common compliance frameworks
   - Audit log queries generate compliance evidence
   - Reports exportable as PDF/JSON
@@ -248,8 +274,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: Sample compliance report generated, audit data completeness verified, template accuracy validated
 
 #### 14.3 — Distributed Job Processing
+
 - **Objective:** Scale job execution beyond single-node limits; enable job federation
 - **Success Criteria:**
+
   - Job queue distributes to multiple worker processes/nodes
   - Job state machine tracks job lifecycle across distributed nodes
   - Failure recovery and retry logic implemented
@@ -262,8 +290,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: Distributed job execution tested under load, failover scenarios validated, operations runbook documented
 
 #### 14.4 — Database Sharding Strategy
+
 - **Objective:** Prepare for storage and query performance scaling beyond single-instance limits
 - **Success Criteria:**
+
   - Sharding strategy documented (tenant ID hash, geographic, time-based)
   - Shard key propagation through service layer
   - Shard selection logic implemented and tested
@@ -281,8 +311,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 ### Phase 15+ (Future): Platform Federation & Advanced Operations
 
 #### 15.1 — Cross-Tenant Federation & Platform Analytics
+
 - **Objective:** Enable platform-wide insights without violating tenant isolation
 - **Success Criteria:**
+
   - Aggregation queries compute platform-wide metrics without accessing individual tenant data
   - Anonymous dashboards show industry benchmarks and trend analysis
   - Tenant consent model controls contribution to aggregate metrics
@@ -295,8 +327,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: Federation queries return correct aggregates, privacy audit passed, tenant consent recorded
 
 #### 15.2 — Advanced Threat Detection
+
 - **Objective:** Detect security anomalies within tenant behavior; early incident warning
 - **Success Criteria:**
+
   - Machine learning model trained on tenant behavior baseline
   - Real-time anomaly detector flags unusual patterns (burst API calls, failed auth attempts, data export spike)
   - Alert routing to tenant security contact
@@ -309,8 +343,10 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
   - Exit: Anomaly detector tested with synthetic attack patterns, false positive rate acceptable, playbook for response documented
 
 #### 15.3 — On-Premises & Hybrid Cloud Deployment
+
 - **Objective:** Support regulated customers requiring on-premises deployment or hybrid cloud setup
 - **Success Criteria:**
+
   - Deployment model selector (Cloud SaaS vs. On-Premises vs. Hybrid)
   - Network isolation & firewall rules documented for on-premises
   - License key system controls feature access per deployment model
@@ -328,20 +364,20 @@ The GTEK FSM platform currently operates under a **shared database, shared schem
 
 ### 4.1 Technical Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Database sharding complexity increases operational overhead | High | Implement phased sharding; begin with tenant-based sharding on read replicas before write sharding |
-| Multi-database connection strategies reduce connection pool efficiency | Medium | Implement connection pool federation; benchmark connection acquisition latency before production |
-| RLS policy performance degrades with complex tenant hierarchies | Medium | Profile RLS execution plans; optimize indexed predicates; use caching for complex policies |
-| Distributed job processing introduces failure modes (network, queue poison) | High | Implement dead-letter queue handling; automated retry with backoff; operational playbooks for common failure scenarios |
+|Risk|Impact|Mitigation|
+|---|---|---|
+|Database sharding complexity increases operational overhead|High|Implement phased sharding; begin with tenant-based sharding on read replicas before write sharding|
+|Multi-database connection strategies reduce connection pool efficiency|Medium|Implement connection pool federation; benchmark connection acquisition latency before production|
+|RLS policy performance degrades with complex tenant hierarchies|Medium|Profile RLS execution plans; optimize indexed predicates; use caching for complex policies|
+|Distributed job processing introduces failure modes (network, queue poison)|High|Implement dead-letter queue handling; automated retry with backoff; operational playbooks for common failure scenarios|
 
 ### 4.2 Compliance Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Cross-tenant data federation violates GDPR/CCPA requirements | High | Implement explicit tenant consent model; anonymize aggregates; legal review before federation queries run |
-| On-premises deployments introduce audit/compliance divergence | Medium | Unified audit contract across deployments; deployment-specific compliance checklists; cross-deployment audit validation tests |
-| Database-per-tenant adds infrastructure complexity; audit coverage becomes fragmented | Medium | Centralized audit log aggregation; unified query federation across tenant databases |
+|Risk|Impact|Mitigation|
+|---|---|---|
+|Cross-tenant data federation violates GDPR/CCPA requirements|High|Implement explicit tenant consent model; anonymize aggregates; legal review before federation queries run|
+|On-premises deployments introduce audit/compliance divergence|Medium|Unified audit contract across deployments; deployment-specific compliance checklists; cross-deployment audit validation tests|
+|Database-per-tenant adds infrastructure complexity; audit coverage becomes fragmented|Medium|Centralized audit log aggregation; unified query federation across tenant databases|
 
 ### 4.3 Operational Assumptions
 
@@ -370,7 +406,7 @@ This roadmap builds directly on the following delivered artifacts:
 
 ### 5.2 Dependency Chain
 
-```
+```text
 Phase 12 (Current)
   ├── 12.4: KPI-Driven Continuous Improvement ✓ DONE
   ├── 12.5: Multi-Tenant Scaling Roadmap (this document) ← CURRENT
@@ -398,6 +434,7 @@ Phase 15+ (Platform Federation & Advanced Ops)
 ### 5.3 Interface to Continuous Improvement
 
 Weekly KPI cadence (Phase 12.4) monitors:
+
 - **Onboarding Success Rate:** % of self-service registrations completing successfully (target >95%)
 - **Quota Violation Rate:** % of tenants hitting quota limits (target <5% per week)
 - **Isolation Audit Pass Rate:** % of security isolation audits passing (target 100%)
@@ -428,13 +465,13 @@ Regressions in these KPIs trigger improvement items in the weekly cadence, feedi
 
 ### 6.3 Success Metrics (Phase-Level KPIs)
 
-| Metric | Target | Owner |
-|--------|--------|-------|
-| Tenant onboarding time (Phase 12.5.1+) | <15 minutes from API call to provisioned | Platform |
-| Self-service onboarding adoption (Phase 12.5.1+) | >80% adoption within 6 months of launch | Product |
-| Time-to-market for new tenant (Phase 13.1+) | <1 minute for shared DB, <5 minutes for dedicated | Platform |
-| Audit compliance report accuracy (Phase 14.2) | >99% match vs. manual audit | Compliance |
-| Anomaly detection false positive rate (Phase 15.2) | <5% false positives per week | Security |
+|Metric|Target|Owner|
+|---|---|---|
+|Tenant onboarding time (Phase 12.5.1+)|<15 minutes from API call to provisioned|Platform|
+|Self-service onboarding adoption (Phase 12.5.1+)|>80% adoption within 6 months of launch|Product|
+|Time-to-market for new tenant (Phase 13.1+)|<1 minute for shared DB, <5 minutes for dedicated|Platform|
+|Audit compliance report accuracy (Phase 14.2)|>99% match vs. manual audit|Compliance|
+|Anomaly detection false positive rate (Phase 15.2)|<5% false positives per week|Security|
 
 ---
 
@@ -447,5 +484,6 @@ Regressions in these KPIs trigger improvement items in the weekly cadence, feedi
 
 ---
 
-**Document History**
+## Document History
+
 - 2026-04-13: Initial roadmap draft (Phase 12 baseline + Phase 13–15 planning)
