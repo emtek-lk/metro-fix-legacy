@@ -1,0 +1,239 @@
+@page "/management/request-lifecycle"
+@using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests.Requests
+@using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests.Responses
+@using GTEK.FSM.Shared.Contracts.Vocabulary
+@using GTEK.FSM.WebPortal.Services.Management
+@inject IManagementRequestLifecycleApiClient LifecycleApiClient
+
+<PageTitle>Management Request Lifecycle</PageTitle>
+
+<h1>Management Request Lifecycle</h1>
+<p class="lifecycle-hint">Enable the status transitions that your tenant operations are allowed to perform.</p>
+
+<div class="lifecycle-actions">
+	<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
+	<button @onclick="SaveAsync" disabled="@(IsSaving || IsLoading)">Save Lifecycle</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Notice))
+{
+	<p class="lifecycle-notice">@Notice</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+	<p class="lifecycle-error">@ErrorMessage</p>
+}
+
+@if (IsLoading)
+{
+	<p>Loading lifecycle transitions...</p>
+}
+else
+{
+	<table class="lifecycle-table">
+		<thead>
+			<tr>
+				<th>From</th>
+				@foreach (var status in Statuses)
+				{
+					<th>@status</th>
+				}
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var from in Statuses)
+			{
+				<tr>
+					<th>@from</th>
+					@foreach (var to in Statuses)
+					{
+						var key = BuildKey(from, to);
+						var enabled = TransitionSelections.Contains(key);
+						<td>
+							<label class="lifecycle-checkbox">
+								<input type="checkbox"
+									   checked="@enabled"
+									   @onchange="args => ToggleTransition(from, to, args)"
+									   disabled="@IsSaving" />
+							</label>
+						</td>
+					}
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+<style>
+	.lifecycle-hint {
+		color: #475467;
+		margin-bottom: 0.75rem;
+	}
+
+	.lifecycle-actions {
+		display: flex;
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+	}
+
+	.lifecycle-table {
+		width: 100%;
+		border-collapse: collapse;
+		background: #ffffff;
+	}
+
+	.lifecycle-table th,
+	.lifecycle-table td {
+		border: 1px solid #e6ebf2;
+		padding: 0.5rem;
+		text-align: center;
+	}
+
+	.lifecycle-table thead th {
+		background: #f8fafc;
+	}
+
+	.lifecycle-table tbody th {
+		text-align: left;
+		background: #f8fafc;
+	}
+
+	.lifecycle-checkbox {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.lifecycle-error {
+		color: #b42318;
+	}
+
+	.lifecycle-notice {
+		color: #175cd3;
+	}
+</style>
+
+@code {
+	private static readonly string[] Statuses = Enum
+		.GetNames<RequestStage>()
+		.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+		.ToArray();
+
+	private readonly HashSet<string> TransitionSelections = new(StringComparer.OrdinalIgnoreCase);
+
+	private bool IsLoading { get; set; }
+
+	private bool IsSaving { get; set; }
+
+	private string? ErrorMessage { get; set; }
+
+	private string? Notice { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		await this.ReloadAsync();
+	}
+
+	private async Task ReloadAsync()
+	{
+		this.IsLoading = true;
+		this.ErrorMessage = null;
+		this.Notice = null;
+
+		try
+		{
+			var transitions = await this.LifecycleApiClient.GetAsync();
+			this.TransitionSelections.Clear();
+			foreach (var transition in transitions)
+			{
+				if (transition.IsEnabled
+					&& !string.IsNullOrWhiteSpace(transition.FromStatus)
+					&& !string.IsNullOrWhiteSpace(transition.ToStatus))
+				{
+					this.TransitionSelections.Add(BuildKey(transition.FromStatus, transition.ToStatus));
+				}
+			}
+		}
+		catch (ManagementRequestLifecycleApiException ex)
+		{
+			this.ErrorMessage = ex.Message;
+		}
+		finally
+		{
+			this.IsLoading = false;
+		}
+	}
+
+	private void ToggleTransition(string fromStatus, string toStatus, ChangeEventArgs args)
+	{
+		var key = BuildKey(fromStatus, toStatus);
+		var isChecked = args.Value as bool? ?? string.Equals(args.Value?.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+
+		if (isChecked)
+		{
+			this.TransitionSelections.Add(key);
+		}
+		else
+		{
+			this.TransitionSelections.Remove(key);
+		}
+	}
+
+	private async Task SaveAsync()
+	{
+		this.IsSaving = true;
+		this.ErrorMessage = null;
+		this.Notice = null;
+
+		try
+		{
+			if (this.TransitionSelections.Count == 0)
+			{
+				this.ErrorMessage = "At least one transition must remain enabled.";
+				return;
+			}
+
+			var payload = new UpdateServiceRequestLifecycleRequest
+			{
+				Items = this.TransitionSelections
+					.Select(ParseKey)
+					.Where(x => x.HasValue)
+					.Select(x => x.Value)
+					.Select(x => new UpdateServiceRequestLifecycleTransitionRequest
+					{
+						FromStatus = x.From,
+						ToStatus = x.To,
+					})
+					.ToArray(),
+			};
+
+			await this.LifecycleApiClient.UpdateAsync(payload);
+			this.Notice = "Request lifecycle updated.";
+		}
+		catch (ManagementRequestLifecycleApiException ex)
+		{
+			this.ErrorMessage = ex.Message;
+		}
+		finally
+		{
+			this.IsSaving = false;
+		}
+	}
+
+	private static string BuildKey(string fromStatus, string toStatus)
+	{
+		return $"{fromStatus.Trim().ToUpperInvariant()}->{toStatus.Trim().ToUpperInvariant()}";
+	}
+
+	private static (string From, string To)? ParseKey(string key)
+	{
+		var parts = key.Split("->", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+		if (parts.Length != 2)
+		{
+			return null;
+		}
+
+		return (parts[0], parts[1]);
+	}
+}

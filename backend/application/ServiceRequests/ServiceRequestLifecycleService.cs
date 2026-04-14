@@ -5,6 +5,7 @@ using GTEK.FSM.Backend.Application.Persistence.Transactions;
 using GTEK.FSM.Backend.Application.Realtime;
 using GTEK.FSM.Backend.Domain.Audit;
 using GTEK.FSM.Backend.Domain.Enums;
+using GTEK.FSM.Backend.Domain.Policies;
 using System.Text.Json;
 
 namespace GTEK.FSM.Backend.Application.ServiceRequests;
@@ -15,18 +16,21 @@ internal sealed class ServiceRequestLifecycleService : IServiceRequestLifecycleS
     private readonly IUnitOfWork unitOfWork;
     private readonly IAuditLogWriter auditLogWriter;
     private readonly IOperationalUpdatePublisher operationalUpdatePublisher;
+    private readonly IServiceRequestLifecycleTransitionRepository transitionRepository;
     private readonly ServiceRequestSlaOptions slaOptions = new();
 
     public ServiceRequestLifecycleService(
         IServiceRequestRepository serviceRequestRepository,
         IUnitOfWork unitOfWork,
         IAuditLogWriter auditLogWriter,
-        IOperationalUpdatePublisher operationalUpdatePublisher)
+        IOperationalUpdatePublisher operationalUpdatePublisher,
+        IServiceRequestLifecycleTransitionRepository transitionRepository)
     {
         this.serviceRequestRepository = serviceRequestRepository;
         this.unitOfWork = unitOfWork;
         this.auditLogWriter = auditLogWriter;
         this.operationalUpdatePublisher = operationalUpdatePublisher;
+        this.transitionRepository = transitionRepository;
     }
 
     public async Task<TransitionServiceRequestResult> TransitionAsync(
@@ -81,6 +85,25 @@ internal sealed class ServiceRequestLifecycleService : IServiceRequestLifecycleS
                 RowVersion: Convert.ToBase64String(request.RowVersion));
 
             return TransitionServiceRequestResult.Success(duplicatePayload);
+        }
+
+        var hasConfiguredTransitions = await this.transitionRepository
+            .HasConfiguredTransitionsAsync(principal.TenantId, cancellationToken);
+
+        var isAllowedTransition = hasConfiguredTransitions
+            ? await this.transitionRepository.IsEnabledTransitionAsync(
+                principal.TenantId,
+                request.Status,
+                parsedNextStatus,
+                cancellationToken)
+            : ServiceRequestStateTransitions.CanTransition(request.Status, parsedNextStatus);
+
+        if (!isAllowedTransition)
+        {
+            return TransitionServiceRequestResult.Failure(
+                message: $"Invalid request transition: {request.Status} -> {parsedNextStatus}.",
+                errorCode: "REQUEST_TRANSITION_INVALID",
+                statusCode: 400);
         }
 
         var previousStatus = request.Status;

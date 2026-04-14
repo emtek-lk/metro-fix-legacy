@@ -21,7 +21,7 @@ The platform is composed of:
 
 Core operational capabilities and product goals include:
 
-- Service request lifecycle orchestration (New, Assigned, InProgress, OnHold, Completed, Cancelled)
+- Service request lifecycle orchestration (New, Assigned, InProgress, OnHold, Completed, Cancelled and etc)
 - Worker assignment workflows, with roadmap support for road-distance, skills, and internal rating based matching
 - SLA-driven execution model (response, assignment, and completion timers)
 - Real-time updates across channels for status and assignment changes

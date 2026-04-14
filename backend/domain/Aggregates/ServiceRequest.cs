@@ -1,6 +1,5 @@
 using GTEK.FSM.Backend.Domain.Enums;
 using GTEK.FSM.Backend.Domain.Events;
-using GTEK.FSM.Backend.Domain.Policies;
 using GTEK.FSM.Backend.Domain.Rules;
 
 namespace GTEK.FSM.Backend.Domain.Aggregates;
@@ -88,11 +87,6 @@ public sealed class ServiceRequest
         if (nextStatus == ServiceRequestStatus.Completed && !this.ActiveJobId.HasValue)
         {
             throw new InvalidOperationException("Request cannot be completed without an active job.");
-        }
-
-        if (!ServiceRequestStateTransitions.CanTransition(this.Status, nextStatus))
-        {
-            throw new InvalidOperationException($"Invalid request transition: {this.Status} -> {nextStatus}.");
         }
 
         var previousStatus = this.Status;

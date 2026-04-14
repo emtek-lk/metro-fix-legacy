@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantOwnershipGuard, TenantOwnershipGuard>();
         services.AddScoped<IServiceRequestCreationService, ServiceRequestCreationService>();
         services.AddScoped<IServiceRequestLifecycleService, ServiceRequestLifecycleService>();
+        services.AddScoped<IServiceRequestLifecycleDefinitionService, ServiceRequestLifecycleDefinitionService>();
         services.AddScoped<IServiceRequestAssignmentService, ServiceRequestAssignmentService>();
         services.AddScoped<IServiceRequestQueryService, ServiceRequestQueryService>();
         services.AddScoped<IJobQueryService, JobQueryService>();
