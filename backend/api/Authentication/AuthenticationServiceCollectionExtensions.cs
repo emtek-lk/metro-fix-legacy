@@ -24,6 +24,7 @@ public static class AuthenticationServiceCollectionExtensions
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false;
                 options.RequireHttpsMetadata = !environment.IsDevelopment() && !environment.IsEnvironment("Local");
                 options.SaveToken = false;
                 options.IncludeErrorDetails = environment.IsDevelopment() || environment.IsEnvironment("Local");

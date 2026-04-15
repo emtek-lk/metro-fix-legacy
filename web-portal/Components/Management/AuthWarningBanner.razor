@@ -1,0 +1,13 @@
+@namespace GTEK.FSM.WebPortal.Components.Management
+
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="alert alert-warning lifecycle-auth-banner" role="alert" aria-live="polite">
+        <strong>Authentication warning:</strong> @Message
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? Message { get; set; }
+}

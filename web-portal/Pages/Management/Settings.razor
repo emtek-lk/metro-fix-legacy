@@ -11,7 +11,10 @@
 
 <PageTitle>Management Settings</PageTitle>
 
-<h1>Management Settings</h1>
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Management Settings"
+	Description="Permission, guardrail, and governance workflow configuration surface." />
 
 <ResilienceErrorBoundary @ref="errorBoundary">
 	<DataFetchStateDisplay
@@ -112,6 +115,7 @@
 		}
 	</DataFetchStateDisplay>
 </ResilienceErrorBoundary>
+</section>
 
 @code {
 	private ResilienceErrorBoundary? errorBoundary;

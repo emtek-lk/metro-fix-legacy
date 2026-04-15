@@ -18,8 +18,14 @@
 
 <PageTitle>Customer Care Request Workspace</PageTitle>
 
-<h1>Customer Care Request Workspace</h1>
-<OperationalRealtimeStatusBadge State="@realtimeConnectionState" />
+<section class="portal-page-shell">
+<PortalSectionHeader
+    Title="Customer Care Request Workspace"
+    Description="Request-level lifecycle, assignment, and timeline controls with resilient sync.">
+    <Actions>
+        <OperationalRealtimeStatusBadge State="@realtimeConnectionState" />
+    </Actions>
+</PortalSectionHeader>
 
 <ResilienceErrorBoundary @ref="errorBoundary">
     <DataFetchStateDisplay
@@ -159,6 +165,7 @@
         }
     </DataFetchStateDisplay>
 </ResilienceErrorBoundary>
+</section>
 
 @code {
     [Parameter]

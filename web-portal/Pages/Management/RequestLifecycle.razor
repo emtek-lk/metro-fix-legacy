@@ -1,239 +1,485 @@
 @page "/management/request-lifecycle"
+@using System.Net
 @using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests.Requests
 @using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests.Responses
-@using GTEK.FSM.Shared.Contracts.Vocabulary
+@using GTEK.FSM.WebPortal.Models
 @using GTEK.FSM.WebPortal.Services.Management
 @inject IManagementRequestLifecycleApiClient LifecycleApiClient
 
 <PageTitle>Management Request Lifecycle</PageTitle>
 
-<h1>Management Request Lifecycle</h1>
-<p class="lifecycle-hint">Enable the status transitions that your tenant operations are allowed to perform.</p>
+<section class="lifecycle-shell">
+    <HeaderSection
+        IsLoading="@IsLoading"
+        IsSaving="@IsSaving"
+        Notice="@Notice"
+        ErrorMessage="@ErrorMessage"
+        OnRefresh="ReloadAsync"
+        OnSave="SaveAsync" />
 
-<div class="lifecycle-actions">
-	<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
-	<button @onclick="SaveAsync" disabled="@(IsSaving || IsLoading)">Save Lifecycle</button>
-</div>
+    <AuthWarningBanner Message="@AuthWarningMessage" />
 
-@if (!string.IsNullOrWhiteSpace(Notice))
-{
-	<p class="lifecycle-notice">@Notice</p>
-}
-
-@if (!string.IsNullOrWhiteSpace(ErrorMessage))
-{
-	<p class="lifecycle-error">@ErrorMessage</p>
-}
-
-@if (IsLoading)
-{
-	<p>Loading lifecycle transitions...</p>
-}
-else
-{
-	<table class="lifecycle-table">
-		<thead>
-			<tr>
-				<th>From</th>
-				@foreach (var status in Statuses)
-				{
-					<th>@status</th>
-				}
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var from in Statuses)
-			{
-				<tr>
-					<th>@from</th>
-					@foreach (var to in Statuses)
-					{
-						var key = BuildKey(from, to);
-						var enabled = TransitionSelections.Contains(key);
-						<td>
-							<label class="lifecycle-checkbox">
-								<input type="checkbox"
-									   checked="@enabled"
-									   @onchange="args => ToggleTransition(from, to, args)"
-									   disabled="@IsSaving" />
-							</label>
-						</td>
-					}
-				</tr>
-			}
-		</tbody>
-	</table>
-}
+    @if (IsLoading)
+    {
+        <div class="token-card lifecycle-loading" role="status" aria-live="polite">
+            Loading lifecycle transitions...
+        </div>
+    }
+    else
+    {
+        <LifecycleBoard Columns="@BoardColumns" Disabled="@IsSaving" OnToggle="ToggleTransitionAsync" />
+    }
+</section>
 
 <style>
-	.lifecycle-hint {
-		color: #475467;
-		margin-bottom: 0.75rem;
-	}
+    .lifecycle-shell {
+        display: grid;
+        gap: var(--space-4);
+    }
 
-	.lifecycle-actions {
-		display: flex;
-		gap: 0.75rem;
-		margin-bottom: 1rem;
-	}
+    .lifecycle-header {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        justify-content: space-between;
+    }
 
-	.lifecycle-table {
-		width: 100%;
-		border-collapse: collapse;
-		background: #ffffff;
-	}
+    .lifecycle-header__copy {
+        display: grid;
+        gap: var(--space-2);
+    }
 
-	.lifecycle-table th,
-	.lifecycle-table td {
-		border: 1px solid #e6ebf2;
-		padding: 0.5rem;
-		text-align: center;
-	}
+    .lifecycle-header__title {
+        font-size: var(--font-size-xl);
+        line-height: var(--line-height-tight);
+        margin: 0;
+    }
 
-	.lifecycle-table thead th {
-		background: #f8fafc;
-	}
+    .lifecycle-header__description {
+        color: var(--color-text-muted);
+        margin: 0;
+    }
 
-	.lifecycle-table tbody th {
-		text-align: left;
-		background: #f8fafc;
-	}
+    .lifecycle-header__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
 
-	.lifecycle-checkbox {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-	}
+    .lifecycle-auth-banner {
+        margin-bottom: 0;
+    }
 
-	.lifecycle-error {
-		color: #b42318;
-	}
+    .lifecycle-notice,
+    .lifecycle-error {
+        margin: 0;
+        padding: 0 var(--space-1);
+    }
 
-	.lifecycle-notice {
-		color: #175cd3;
-	}
+    .lifecycle-notice {
+        color: var(--color-link-default);
+    }
+
+    .lifecycle-error {
+        color: var(--color-text-primary);
+    }
+
+    .lifecycle-loading {
+        color: var(--color-text-muted);
+    }
+
+    .lifecycle-board {
+        overflow-x: auto;
+        padding-bottom: var(--space-2);
+    }
+
+    .lifecycle-board__grid {
+        display: grid;
+        gap: var(--space-3);
+        grid-template-columns: repeat(6, minmax(220px, 1fr));
+        min-width: 960px;
+    }
+
+    .lifecycle-column {
+        display: grid;
+        gap: var(--space-3);
+        margin: 0;
+        padding: var(--space-3);
+    }
+
+    .lifecycle-column__header {
+        align-items: baseline;
+        border-bottom: 1px solid var(--color-border-default);
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: var(--space-2);
+    }
+
+    .lifecycle-column__title {
+        font-size: var(--font-size-md);
+        font-weight: var(--font-weight-semibold);
+        margin: 0;
+    }
+
+    .lifecycle-column__count {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+        text-transform: uppercase;
+    }
+
+    .lifecycle-column__cards {
+        display: grid;
+        gap: var(--space-2);
+    }
+
+    .lifecycle-transition-card {
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        background: var(--color-bg-surface-alt);
+        box-shadow: var(--elevation-1);
+        transition: transform 120ms ease, border-color 120ms ease;
+    }
+
+    .lifecycle-transition-card:hover {
+        transform: translateY(-1px);
+    }
+
+    .lifecycle-transition-card.is-enabled {
+        border-color: var(--color-link-default);
+    }
+
+    .lifecycle-transition-card__button {
+        background: transparent;
+        border: 0;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        display: grid;
+        gap: var(--space-1);
+        padding: var(--space-2);
+        text-align: left;
+        width: 100%;
+    }
+
+    .lifecycle-transition-card__button:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .lifecycle-transition-card__button:focus-visible {
+        outline: 2px solid var(--color-link-default);
+        outline-offset: 2px;
+    }
+
+    .lifecycle-transition-card__top {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .lifecycle-transition-card__badge {
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-sm);
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+        padding: 0 var(--space-2);
+        text-transform: uppercase;
+    }
+
+    .lifecycle-transition-card__indicator {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .lifecycle-transition-card__route {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .lifecycle-transition-card__state {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+    }
+
+    @@media (max-width: 1200px) {
+        .lifecycle-board__grid {
+            grid-template-columns: repeat(3, minmax(220px, 1fr));
+            min-width: 680px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .lifecycle-board__grid {
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            min-width: 460px;
+        }
+
+        .lifecycle-header {
+            align-items: stretch;
+        }
+    }
 </style>
 
 @code {
-	private static readonly string[] Statuses = Enum
-		.GetNames<RequestStage>()
-		.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
-		.ToArray();
+    private static readonly string[] Statuses =
+    [
+        "New",
+        "Assigned",
+        "InProgress",
+        "OnHold",
+        "Completed",
+        "Cancelled",
+    ];
 
-	private readonly HashSet<string> TransitionSelections = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly (string From, string To)[] PlaceholderTransitions =
+    [
+        ("New", "Assigned"),
+        ("New", "Cancelled"),
+        ("Assigned", "InProgress"),
+        ("Assigned", "OnHold"),
+        ("Assigned", "Cancelled"),
+        ("InProgress", "OnHold"),
+        ("InProgress", "Completed"),
+        ("OnHold", "InProgress"),
+        ("OnHold", "Cancelled"),
+    ];
 
-	private bool IsLoading { get; set; }
+    private readonly HashSet<string> TransitionSelections = new(StringComparer.OrdinalIgnoreCase);
 
-	private bool IsSaving { get; set; }
+    private IReadOnlyList<LifecycleColumnModel> BoardColumns { get; set; } = [];
 
-	private string? ErrorMessage { get; set; }
+    private bool IsLoading { get; set; }
 
-	private string? Notice { get; set; }
+    private bool IsSaving { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
-		await this.ReloadAsync();
-	}
+    private string? ErrorMessage { get; set; }
 
-	private async Task ReloadAsync()
-	{
-		this.IsLoading = true;
-		this.ErrorMessage = null;
-		this.Notice = null;
+    private string? Notice { get; set; }
 
-		try
-		{
-			var transitions = await this.LifecycleApiClient.GetAsync();
-			this.TransitionSelections.Clear();
-			foreach (var transition in transitions)
-			{
-				if (transition.IsEnabled
-					&& !string.IsNullOrWhiteSpace(transition.FromStatus)
-					&& !string.IsNullOrWhiteSpace(transition.ToStatus))
-				{
-					this.TransitionSelections.Add(BuildKey(transition.FromStatus, transition.ToStatus));
-				}
-			}
-		}
-		catch (ManagementRequestLifecycleApiException ex)
-		{
-			this.ErrorMessage = ex.Message;
-		}
-		finally
-		{
-			this.IsLoading = false;
-		}
-	}
+    private string? AuthWarningMessage { get; set; }
 
-	private void ToggleTransition(string fromStatus, string toStatus, ChangeEventArgs args)
-	{
-		var key = BuildKey(fromStatus, toStatus);
-		var isChecked = args.Value as bool? ?? string.Equals(args.Value?.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+    protected override async Task OnInitializedAsync()
+    {
+        this.ApplyPlaceholderData();
+        await this.ReloadAsync();
+    }
 
-		if (isChecked)
-		{
-			this.TransitionSelections.Add(key);
-		}
-		else
-		{
-			this.TransitionSelections.Remove(key);
-		}
-	}
+    private async Task ReloadAsync()
+    {
+        this.IsLoading = true;
+        this.ErrorMessage = null;
+        this.Notice = null;
 
-	private async Task SaveAsync()
-	{
-		this.IsSaving = true;
-		this.ErrorMessage = null;
-		this.Notice = null;
+        try
+        {
+            var transitions = await this.LifecycleApiClient.GetAsync();
+            this.AuthWarningMessage = null;
+            this.TransitionSelections.Clear();
 
-		try
-		{
-			if (this.TransitionSelections.Count == 0)
-			{
-				this.ErrorMessage = "At least one transition must remain enabled.";
-				return;
-			}
+            foreach (var transition in transitions)
+            {
+                if (transition.IsEnabled
+                    && !string.IsNullOrWhiteSpace(transition.FromStatus)
+                    && !string.IsNullOrWhiteSpace(transition.ToStatus))
+                {
+                    this.TransitionSelections.Add(BuildKey(transition.FromStatus, transition.ToStatus));
+                }
+            }
 
-			var payload = new UpdateServiceRequestLifecycleRequest
-			{
-				Items = this.TransitionSelections
-					.Select(ParseKey)
-					.Where(x => x.HasValue)
-					.Select(x => x.Value)
-					.Select(x => new UpdateServiceRequestLifecycleTransitionRequest
-					{
-						FromStatus = x.From,
-						ToStatus = x.To,
-					})
-					.ToArray(),
-			};
+            this.RebuildBoard();
+        }
+        catch (ManagementRequestLifecycleApiException ex)
+        {
+            this.ErrorMessage = ex.Message;
+            this.AuthWarningMessage = IsAuthFailure(ex.StatusCode)
+                ? "Your current session does not have permission to manage lifecycle transitions. Sign in with a management role to continue."
+                : null;
+        }
+        finally
+        {
+            this.IsLoading = false;
+        }
+    }
 
-			await this.LifecycleApiClient.UpdateAsync(payload);
-			this.Notice = "Request lifecycle updated.";
-		}
-		catch (ManagementRequestLifecycleApiException ex)
-		{
-			this.ErrorMessage = ex.Message;
-		}
-		finally
-		{
-			this.IsSaving = false;
-		}
-	}
+    private Task ToggleTransitionAsync(LifecycleTransitionCardModel item)
+    {
+        if (item.IsImmutable || this.IsSaving)
+        {
+            return Task.CompletedTask;
+        }
 
-	private static string BuildKey(string fromStatus, string toStatus)
-	{
-		return $"{fromStatus.Trim().ToUpperInvariant()}->{toStatus.Trim().ToUpperInvariant()}";
-	}
+        if (this.TransitionSelections.Contains(item.Key))
+        {
+            this.TransitionSelections.Remove(item.Key);
+        }
+        else
+        {
+            this.TransitionSelections.Add(item.Key);
+        }
 
-	private static (string From, string To)? ParseKey(string key)
-	{
-		var parts = key.Split("->", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-		if (parts.Length != 2)
-		{
-			return null;
-		}
+        this.RebuildBoard();
+        return Task.CompletedTask;
+    }
 
-		return (parts[0], parts[1]);
-	}
+    private async Task SaveAsync()
+    {
+        this.IsSaving = true;
+        this.ErrorMessage = null;
+        this.Notice = null;
+
+        try
+        {
+            if (this.TransitionSelections.Count == 0)
+            {
+                this.ErrorMessage = "At least one transition must remain enabled.";
+                return;
+            }
+
+            var payload = new UpdateServiceRequestLifecycleRequest
+            {
+                Items = this.TransitionSelections
+                    .Select(ParseKey)
+                    .Where(x => x.HasValue)
+                    .Select(x => x!.Value)
+                    .Select(x => new UpdateServiceRequestLifecycleTransitionRequest
+                    {
+                        FromStatus = x.From,
+                        ToStatus = x.To,
+                    })
+                    .ToArray(),
+            };
+
+            var persisted = await this.LifecycleApiClient.UpdateAsync(payload);
+            this.AuthWarningMessage = null;
+            this.TransitionSelections.Clear();
+
+            foreach (var transition in persisted)
+            {
+                if (transition.IsEnabled
+                    && !string.IsNullOrWhiteSpace(transition.FromStatus)
+                    && !string.IsNullOrWhiteSpace(transition.ToStatus))
+                {
+                    this.TransitionSelections.Add(BuildKey(transition.FromStatus, transition.ToStatus));
+                }
+            }
+
+            this.RebuildBoard();
+            this.Notice = "Request lifecycle updated.";
+        }
+        catch (ManagementRequestLifecycleApiException ex)
+        {
+            this.ErrorMessage = ex.Message;
+            this.AuthWarningMessage = IsAuthFailure(ex.StatusCode)
+                ? "Save blocked by authentication or authorization policy. Verify your management session and retry."
+                : null;
+        }
+        finally
+        {
+            this.IsSaving = false;
+        }
+    }
+
+    private void ApplyPlaceholderData()
+    {
+        this.TransitionSelections.Clear();
+
+        foreach (var transition in PlaceholderTransitions)
+        {
+            this.TransitionSelections.Add(BuildKey(transition.From, transition.To));
+        }
+
+        this.RebuildBoard();
+    }
+
+    private void RebuildBoard()
+    {
+        this.BoardColumns = MapTransitionsToBoard(this.TransitionSelections);
+    }
+
+    private static IReadOnlyList<LifecycleColumnModel> MapTransitionsToBoard(IReadOnlySet<string> enabledTransitions)
+    {
+        var rankByStatus = Statuses
+            .Select((status, index) => new { status, index })
+            .ToDictionary(x => x.status, x => x.index, StringComparer.OrdinalIgnoreCase);
+
+        return Statuses
+            .Select(fromStatus =>
+            {
+                var cards = Statuses
+                    .Where(toStatus => !string.Equals(fromStatus, toStatus, StringComparison.OrdinalIgnoreCase))
+                    .Select(toStatus =>
+                    {
+                        var key = BuildKey(fromStatus, toStatus);
+                        var direction = ResolveDirection(fromStatus, toStatus, rankByStatus);
+                        var (badge, indicator) = ResolveDirectionPresentation(direction);
+
+                        return new LifecycleTransitionCardModel(
+                            FromStatus: fromStatus,
+                            ToStatus: toStatus,
+                            IsEnabled: enabledTransitions.Contains(key),
+                            Direction: direction,
+                            BadgeLabel: badge,
+                            DirectionIndicator: indicator,
+                            Key: key);
+                    })
+                    .ToArray();
+
+                return new LifecycleColumnModel(fromStatus, cards);
+            })
+            .ToArray();
+    }
+
+    private static LifecycleTransitionDirection ResolveDirection(
+        string fromStatus,
+        string toStatus,
+        IReadOnlyDictionary<string, int> rankByStatus)
+    {
+        var fromRank = rankByStatus.TryGetValue(fromStatus, out var fromValue) ? fromValue : 0;
+        var toRank = rankByStatus.TryGetValue(toStatus, out var toValue) ? toValue : 0;
+
+        if (toRank > fromRank)
+        {
+            return LifecycleTransitionDirection.Forward;
+        }
+
+        if (toRank < fromRank)
+        {
+            return LifecycleTransitionDirection.Backflow;
+        }
+
+        return LifecycleTransitionDirection.SameStage;
+    }
+
+    private static (string Badge, string Indicator) ResolveDirectionPresentation(LifecycleTransitionDirection direction)
+    {
+        return direction switch
+        {
+            LifecycleTransitionDirection.Forward => ("Forward", "->"),
+            LifecycleTransitionDirection.Backflow => ("Backflow", "<-"),
+            _ => ("Same", "--"),
+        };
+    }
+
+    private static string BuildKey(string fromStatus, string toStatus)
+    {
+        return $"{fromStatus.Trim().ToUpperInvariant()}->{toStatus.Trim().ToUpperInvariant()}";
+    }
+
+    private static (string From, string To)? ParseKey(string key)
+    {
+        var parts = key.Split("->", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 2)
+        {
+            return null;
+        }
+
+        return (parts[0], parts[1]);
+    }
+
+    private static bool IsAuthFailure(HttpStatusCode statusCode)
+    {
+        return statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden;
+    }
 }

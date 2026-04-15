@@ -6,15 +6,20 @@
 
 <PageTitle>Management Workers</PageTitle>
 
-<h1>Management Workers</h1>
-
-<div class="workers-actions">
-	<input class="workers-search" @bind="SearchText" placeholder="Search by code or name" />
-	<label class="workers-checkbox">
-		<input type="checkbox" @bind="IncludeInactive" /> Include inactive
-	</label>
-	<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
-</div>
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Management Workers"
+	Description="Worker profile management, availability controls, and skills governance.">
+	<Actions>
+		<div class="workers-actions portal-inline-actions">
+			<input class="workers-search" @bind="SearchText" placeholder="Search by code or name" />
+			<label class="workers-checkbox">
+				<input type="checkbox" @bind="IncludeInactive" /> Include inactive
+			</label>
+			<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
+		</div>
+	</Actions>
+</PortalSectionHeader>
 
 @if (!string.IsNullOrWhiteSpace(Notice))
 {
@@ -26,8 +31,8 @@
 	<p class="workers-error">@ErrorMessage</p>
 }
 
-<section class="workers-layout">
-	<article class="workers-panel">
+<section class="workers-layout portal-grid-2">
+	<article class="workers-panel portal-panel">
 		<h2>@(EditTarget is null ? "Create Worker" : "Edit Worker")</h2>
 		<div class="workers-form">
 			<label>Code</label>
@@ -64,7 +69,7 @@
 		</div>
 	</article>
 
-	<article class="workers-panel">
+	<article class="workers-panel portal-panel">
 		<h2>Worker Profiles</h2>
 		@if (IsLoading)
 		{
@@ -108,19 +113,15 @@
 		}
 	</article>
 </section>
+</section>
 
 <style>
 	.workers-layout {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		align-items: start;
 	}
 
 	.workers-panel {
-		border: 1px solid #d8dde6;
-		border-radius: 8px;
-		padding: 1rem;
-		background: #ffffff;
+		padding: var(--space-4);
 	}
 
 	.workers-actions {
@@ -166,11 +167,16 @@
 	}
 
 	.workers-error {
-		color: #b42318;
+		color: var(--color-text-primary);
 	}
 
 	.workers-notice {
-		color: #175cd3;
+		color: var(--color-link-default);
+	}
+
+	.workers-table th,
+	.workers-table td {
+		border-bottom: 1px solid var(--color-border-default);
 	}
 </style>
 

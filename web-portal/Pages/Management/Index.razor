@@ -9,7 +9,10 @@
 
 <PageTitle>Management</PageTitle>
 
-<h1>Management</h1>
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Management"
+	Description="Operational oversight dashboard for KPIs, trend signals, and drill-in actions." />
 
 <ResilienceErrorBoundary @ref="errorBoundary">
 	<DataFetchStateDisplay
@@ -71,6 +74,7 @@
 		}
 	</DataFetchStateDisplay>
 </ResilienceErrorBoundary>
+</section>
 
 @code {
 	private ResilienceErrorBoundary? errorBoundary;
