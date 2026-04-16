@@ -70,6 +70,11 @@ internal sealed class ServiceRequestRepository : EfRepository<ServiceRequest>, I
             query = query.Where(x => x.CustomerUserId == specification.CustomerUserId.Value);
         }
 
+        if (specification.CurrentStageId.HasValue)
+        {
+            query = query.Where(x => x.CurrentStageId == specification.CurrentStageId.Value);
+        }
+
         if (specification.Status.HasValue)
         {
             query = query.Where(x => x.Status == specification.Status.Value);
@@ -110,8 +115,8 @@ internal sealed class ServiceRequestRepository : EfRepository<ServiceRequest>, I
     {
         return (sortBy, sortDirection) switch
         {
-            (ServiceRequestSortField.Status, SortDirection.Ascending) => query.OrderBy(x => x.Status).ThenBy(x => x.Id),
-            (ServiceRequestSortField.Status, SortDirection.Descending) => query.OrderByDescending(x => x.Status).ThenByDescending(x => x.Id),
+            (ServiceRequestSortField.Status, SortDirection.Ascending) => query.OrderBy(x => x.CurrentStageId).ThenBy(x => x.Id),
+            (ServiceRequestSortField.Status, SortDirection.Descending) => query.OrderByDescending(x => x.CurrentStageId).ThenByDescending(x => x.Id),
             (ServiceRequestSortField.Title, SortDirection.Ascending) => query.OrderBy(x => x.Title).ThenBy(x => x.Id),
             (ServiceRequestSortField.Title, SortDirection.Descending) => query.OrderByDescending(x => x.Title).ThenByDescending(x => x.Id),
             (ServiceRequestSortField.CreatedAtUtc, SortDirection.Ascending) => query.OrderBy(x => x.CreatedAtUtc).ThenBy(x => x.Id),

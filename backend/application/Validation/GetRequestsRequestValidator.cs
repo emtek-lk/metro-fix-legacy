@@ -1,5 +1,4 @@
 using FluentValidation;
-using GTEK.FSM.Backend.Domain.Enums;
 using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests;
 
 namespace GTEK.FSM.Backend.Application.Validation;
@@ -21,10 +20,10 @@ public sealed class GetRequestsRequestValidator : AbstractValidator<GetRequestsR
             .When(x => x.PageSize.HasValue)
             .WithMessage("pageSize must be less than or equal to 200.");
 
-        RuleFor(x => x.StatusFilter)
-            .Must(BeValidStatus)
-            .When(x => !string.IsNullOrWhiteSpace(x.StatusFilter))
-            .WithMessage("statusFilter is invalid.");
+        RuleFor(x => x.StageFilter)
+            .Must(BeGuid)
+            .When(x => !string.IsNullOrWhiteSpace(x.StageFilter) && LooksLikeGuidToken(x.StageFilter))
+            .WithMessage("stageFilter must be a valid guid when a guid token is provided.");
 
         RuleFor(x => x.AssignedWorkerUserIdFilter)
             .Must(BeGuid)
@@ -41,15 +40,20 @@ public sealed class GetRequestsRequestValidator : AbstractValidator<GetRequestsR
             .WithMessage("createdFromUtc must be less than or equal to createdToUtc.");
     }
 
-    private static bool BeValidStatus(string? value)
-    {
-        return !string.IsNullOrWhiteSpace(value)
-            && Enum.TryParse<ServiceRequestStatus>(value.Trim(), ignoreCase: true, out _);
-    }
-
     private static bool BeGuid(string? value)
     {
         return !string.IsNullOrWhiteSpace(value) && Guid.TryParse(value, out _);
+    }
+
+    private static bool LooksLikeGuidToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length >= 32 && trimmed.Contains('-', StringComparison.Ordinal);
     }
 
     private static bool BeValidSortDirection(string? value)

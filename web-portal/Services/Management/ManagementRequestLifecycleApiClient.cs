@@ -9,9 +9,9 @@ namespace GTEK.FSM.WebPortal.Services.Management;
 
 public interface IManagementRequestLifecycleApiClient
 {
-    Task<IReadOnlyList<ServiceRequestLifecycleTransitionResponse>> GetAsync(CancellationToken cancellationToken = default);
+    Task<GetServiceRequestLifecycleResponse> GetAsync(CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<ServiceRequestLifecycleTransitionResponse>> UpdateAsync(UpdateServiceRequestLifecycleRequest request, CancellationToken cancellationToken = default);
+    Task<GetServiceRequestLifecycleResponse> UpdateAsync(UpdateServiceRequestLifecycleRequest request, CancellationToken cancellationToken = default);
 }
 
 public sealed class ManagementRequestLifecycleApiClient : IManagementRequestLifecycleApiClient
@@ -28,20 +28,20 @@ public sealed class ManagementRequestLifecycleApiClient : IManagementRequestLife
         this.httpClient = httpClient;
     }
 
-    public async Task<IReadOnlyList<ServiceRequestLifecycleTransitionResponse>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<GetServiceRequestLifecycleResponse> GetAsync(CancellationToken cancellationToken = default)
     {
         using var response = await this.httpClient.GetAsync("api/v1/management/request-lifecycle", cancellationToken);
         var envelope = await ReadSuccessEnvelopeAsync<GetServiceRequestLifecycleResponse>(response, cancellationToken);
-        return envelope.Data?.Items ?? [];
+        return envelope.Data ?? new GetServiceRequestLifecycleResponse();
     }
 
-    public async Task<IReadOnlyList<ServiceRequestLifecycleTransitionResponse>> UpdateAsync(
+    public async Task<GetServiceRequestLifecycleResponse> UpdateAsync(
         UpdateServiceRequestLifecycleRequest request,
         CancellationToken cancellationToken = default)
     {
         using var response = await this.httpClient.PutAsJsonAsync("api/v1/management/request-lifecycle", request, cancellationToken);
         var envelope = await ReadSuccessEnvelopeAsync<GetServiceRequestLifecycleResponse>(response, cancellationToken);
-        return envelope.Data?.Items ?? [];
+        return envelope.Data ?? new GetServiceRequestLifecycleResponse();
     }
 
     private static async Task<ApiResponse<T>> ReadSuccessEnvelopeAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)

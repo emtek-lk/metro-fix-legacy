@@ -206,6 +206,7 @@ public static class V1RouteGroupExtensions
             var transition = await lifecycleService.TransitionAsync(
                 principal,
                 requestId,
+                request.NextStageId,
                 request.NextStatus,
                 request.RowVersion,
                 cancellationToken);
@@ -883,7 +884,8 @@ public static class V1RouteGroupExtensions
 
             var payload = new GetServiceRequestLifecycleResponse
             {
-                Items = result.Payload.Select(MapLifecycleTransition).ToArray(),
+                Stages = result.Payload.Stages.Select(MapLifecycleStage).ToArray(),
+                Items = result.Payload.Transitions.Select(MapLifecycleTransition).ToArray(),
             };
 
             return Results.Ok(ApiResponse<GetServiceRequestLifecycleResponse>.Ok(payload, result.Message, context.TraceIdentifier));
@@ -929,7 +931,8 @@ public static class V1RouteGroupExtensions
 
             var payload = new GetServiceRequestLifecycleResponse
             {
-                Items = result.Payload.Select(MapLifecycleTransition).ToArray(),
+                Stages = result.Payload.Stages.Select(MapLifecycleStage).ToArray(),
+                Items = result.Payload.Transitions.Select(MapLifecycleTransition).ToArray(),
             };
 
             return Results.Ok(ApiResponse<GetServiceRequestLifecycleResponse>.Ok(payload, result.Message, context.TraceIdentifier));
@@ -1874,10 +1877,23 @@ public static class V1RouteGroupExtensions
         };
     }
 
+    private static ServiceRequestLifecycleStageResponse MapLifecycleStage(QueriedServiceRequestLifecycleStage stage)
+    {
+        return new ServiceRequestLifecycleStageResponse
+        {
+            StageId = stage.StageId.ToString(),
+            StatusCode = stage.StatusCode,
+            DisplayName = stage.DisplayName,
+            DisplayOrder = stage.DisplayOrder,
+        };
+    }
+
     private static ServiceRequestLifecycleTransitionResponse MapLifecycleTransition(QueriedServiceRequestLifecycleTransition transition)
     {
         return new ServiceRequestLifecycleTransitionResponse
         {
+            FromStageId = transition.FromStageId.ToString(),
+            ToStageId = transition.ToStageId.ToString(),
             FromStatus = transition.FromStatus,
             ToStatus = transition.ToStatus,
             IsEnabled = transition.IsEnabled,

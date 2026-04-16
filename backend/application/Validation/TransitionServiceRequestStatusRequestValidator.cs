@@ -8,10 +8,16 @@ public sealed class TransitionServiceRequestStatusRequestValidator : AbstractVal
 {
     public TransitionServiceRequestStatusRequestValidator()
     {
+        RuleFor(x => x)
+            .Must(x => !string.IsNullOrWhiteSpace(x.NextStatus) || !string.IsNullOrWhiteSpace(x.NextStageId))
+            .WithMessage("nextStatus or nextStageId is required.");
+
+        RuleFor(x => x.NextStageId)
+            .Must(BeValidGuidOrEmpty)
+            .WithMessage("nextStageId must be a valid guid when provided.");
+
         RuleFor(x => x.NextStatus)
-            .NotEmpty()
-            .WithMessage("Next status is required.")
-            .Must(BeValidServiceRequestStatus)
+            .Must(BeValidServiceRequestStatusOrEmpty)
             .WithMessage("Requested status is invalid.");
     }
 
@@ -19,5 +25,15 @@ public sealed class TransitionServiceRequestStatusRequestValidator : AbstractVal
     {
         return !string.IsNullOrWhiteSpace(value)
             && Enum.TryParse<ServiceRequestStatus>(value.Trim(), ignoreCase: true, out _);
+    }
+
+    private static bool BeValidServiceRequestStatusOrEmpty(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) || BeValidServiceRequestStatus(value);
+    }
+
+    private static bool BeValidGuidOrEmpty(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) || Guid.TryParse(value.Trim(), out var parsed) && parsed != Guid.Empty;
     }
 }

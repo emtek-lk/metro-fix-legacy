@@ -2,7 +2,6 @@ using GTEK.FSM.Backend.Application.Identity;
 using GTEK.FSM.Backend.Application.Persistence.Repositories;
 using GTEK.FSM.Backend.Application.Persistence.Specifications;
 using GTEK.FSM.Backend.Domain.Aggregates;
-using GTEK.FSM.Backend.Domain.Enums;
 using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests;
 
 namespace GTEK.FSM.Backend.Application.ServiceRequests;
@@ -11,13 +10,16 @@ internal sealed class ServiceRequestQueryService : IServiceRequestQueryService
 {
     private readonly IServiceRequestRepository serviceRequestRepository;
     private readonly IJobRepository jobRepository;
+    private readonly IServiceRequestLifecycleStageRepository stageRepository;
 
     public ServiceRequestQueryService(
         IServiceRequestRepository serviceRequestRepository,
-        IJobRepository jobRepository)
+        IJobRepository jobRepository,
+        IServiceRequestLifecycleStageRepository stageRepository)
     {
         this.serviceRequestRepository = serviceRequestRepository;
         this.jobRepository = jobRepository;
+        this.stageRepository = stageRepository;
     }
 
     public async Task<ServiceRequestQueryResult> QueryAsync(
@@ -78,18 +80,47 @@ internal sealed class ServiceRequestQueryService : IServiceRequestQueryService
             scopedAssignedWorkerUserId = parsedWorkerUserId;
         }
 
-        ServiceRequestStatus? status = null;
-        if (!string.IsNullOrWhiteSpace(normalizedRequest.StatusFilter))
-        {
-            if (!Enum.TryParse<ServiceRequestStatus>(normalizedRequest.StatusFilter.Trim(), true, out var parsedStatus))
-            {
-                return ServiceRequestQueryResult.Failure(
-                    message: "statusFilter is invalid.",
-                    errorCode: "VALIDATION_STATUS_FILTER_INVALID",
-                    statusCode: 400);
-            }
+        var configuredStages = await this.stageRepository.ListByTenantAsync(principal.TenantId, cancellationToken);
+        var stageById = configuredStages.ToDictionary(x => x.Id);
 
-            status = parsedStatus;
+        Guid? currentStageIdFilter = null;
+        var filterToken = normalizedRequest.StageFilter;
+        if (string.IsNullOrWhiteSpace(filterToken))
+        {
+            filterToken = normalizedRequest.StatusFilter;
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterToken))
+        {
+            var trimmedFilter = filterToken.Trim();
+            if (Guid.TryParse(trimmedFilter, out var parsedStageId) && parsedStageId != Guid.Empty)
+            {
+                if (!stageById.ContainsKey(parsedStageId))
+                {
+                    return ServiceRequestQueryResult.Failure(
+                        message: "stageFilter does not reference a configured stage.",
+                        errorCode: "VALIDATION_STAGE_FILTER_INVALID",
+                        statusCode: 400);
+                }
+
+                currentStageIdFilter = parsedStageId;
+            }
+            else
+            {
+                var stageMatch = configuredStages
+                    .FirstOrDefault(x => string.Equals(x.DisplayName, trimmedFilter, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(x.StatusCode, trimmedFilter, StringComparison.OrdinalIgnoreCase));
+
+                if (stageMatch is null)
+                {
+                    return ServiceRequestQueryResult.Failure(
+                        message: "stageFilter is invalid.",
+                        errorCode: "VALIDATION_STAGE_FILTER_INVALID",
+                        statusCode: 400);
+                }
+
+                currentStageIdFilter = stageMatch.Id;
+            }
         }
 
         var sortBy = ParseSortField(normalizedRequest.SortBy);
@@ -99,7 +130,7 @@ internal sealed class ServiceRequestQueryService : IServiceRequestQueryService
         var specification = new ServiceRequestQuerySpecification(
             TenantId: principal.TenantId,
             CustomerUserId: scopedCustomerUserId,
-            Status: status,
+            CurrentStageId: currentStageIdFilter,
             CreatedFromUtc: normalizedRequest.CreatedFromUtc,
             CreatedToUtc: normalizedRequest.CreatedToUtc,
             AssignedWorkerUserId: scopedAssignedWorkerUserId,
@@ -123,7 +154,7 @@ internal sealed class ServiceRequestQueryService : IServiceRequestQueryService
 
             projectedItems.Add(new QueriedServiceRequestItem(
                 RequestId: item.Id,
-                Status: item.Status.ToString(),
+                Status: ResolveStageLabel(item.CurrentStageId, item.Status.ToString(), stageById),
                 Summary: item.Title,
                 TenantId: item.TenantId,
                 CustomerUserId: item.CustomerUserId,
@@ -181,6 +212,9 @@ internal sealed class ServiceRequestQueryService : IServiceRequestQueryService
             activeJob = await this.jobRepository.GetByIdAsync(principal.TenantId, request.ActiveJobId.Value, cancellationToken);
         }
 
+        var configuredStages = await this.stageRepository.ListByTenantAsync(principal.TenantId, cancellationToken);
+        var stageById = configuredStages.ToDictionary(x => x.Id);
+
         if (principal.IsInRole("Worker"))
         {
             if (activeJob?.AssignedWorkerUserId != principal.UserId)
@@ -211,7 +245,7 @@ internal sealed class ServiceRequestQueryService : IServiceRequestQueryService
                 TenantId: request.TenantId,
                 CustomerUserId: request.CustomerUserId,
                 Title: request.Title,
-                Status: request.Status.ToString(),
+                Status: ResolveStageLabel(request.CurrentStageId, request.Status.ToString(), stageById),
                 CreatedAtUtc: request.CreatedAtUtc,
                 UpdatedAtUtc: request.UpdatedAtUtc,
                 ActiveJobId: request.ActiveJobId,
@@ -291,5 +325,18 @@ internal sealed class ServiceRequestQueryService : IServiceRequestQueryService
         return string.Equals(direction?.Trim(), "asc", StringComparison.OrdinalIgnoreCase)
             ? SortDirection.Ascending
             : SortDirection.Descending;
+    }
+
+    private static string ResolveStageLabel(
+        Guid? currentStageId,
+        string fallbackStatus,
+        IReadOnlyDictionary<Guid, ServiceRequestLifecycleStage> stageById)
+    {
+        if (currentStageId.HasValue && stageById.TryGetValue(currentStageId.Value, out var stage))
+        {
+            return stage.DisplayName;
+        }
+
+        return fallbackStatus;
     }
 }

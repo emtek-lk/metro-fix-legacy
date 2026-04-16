@@ -5,7 +5,6 @@ using GTEK.FSM.Backend.Application.Persistence.Transactions;
 using GTEK.FSM.Backend.Application.Realtime;
 using GTEK.FSM.Backend.Domain.Audit;
 using GTEK.FSM.Backend.Domain.Enums;
-using GTEK.FSM.Backend.Domain.Policies;
 using System.Text.Json;
 
 namespace GTEK.FSM.Backend.Application.ServiceRequests;
@@ -16,7 +15,8 @@ internal sealed class ServiceRequestLifecycleService : IServiceRequestLifecycleS
     private readonly IUnitOfWork unitOfWork;
     private readonly IAuditLogWriter auditLogWriter;
     private readonly IOperationalUpdatePublisher operationalUpdatePublisher;
-    private readonly IServiceRequestLifecycleTransitionRepository transitionRepository;
+    private readonly IServiceRequestLifecycleStageRepository stageRepository;
+    private readonly IServiceRequestLifecycleStageTransitionRepository stageTransitionRepository;
     private readonly ServiceRequestSlaOptions slaOptions = new();
 
     public ServiceRequestLifecycleService(
@@ -24,35 +24,30 @@ internal sealed class ServiceRequestLifecycleService : IServiceRequestLifecycleS
         IUnitOfWork unitOfWork,
         IAuditLogWriter auditLogWriter,
         IOperationalUpdatePublisher operationalUpdatePublisher,
-        IServiceRequestLifecycleTransitionRepository transitionRepository)
+        IServiceRequestLifecycleStageRepository stageRepository,
+        IServiceRequestLifecycleStageTransitionRepository stageTransitionRepository)
     {
         this.serviceRequestRepository = serviceRequestRepository;
         this.unitOfWork = unitOfWork;
         this.auditLogWriter = auditLogWriter;
         this.operationalUpdatePublisher = operationalUpdatePublisher;
-        this.transitionRepository = transitionRepository;
+        this.stageRepository = stageRepository;
+        this.stageTransitionRepository = stageTransitionRepository;
     }
 
     public async Task<TransitionServiceRequestResult> TransitionAsync(
         AuthenticatedPrincipal principal,
         Guid requestId,
+        string? nextStageId,
         string? nextStatus,
         string? rowVersion,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(nextStatus))
+        if (string.IsNullOrWhiteSpace(nextStatus) && string.IsNullOrWhiteSpace(nextStageId))
         {
             return TransitionServiceRequestResult.Failure(
-                message: "Next status is required.",
-                errorCode: "VALIDATION_NEXT_STATUS_REQUIRED",
-                statusCode: 400);
-        }
-
-        if (!Enum.TryParse<ServiceRequestStatus>(nextStatus.Trim(), ignoreCase: true, out var parsedNextStatus))
-        {
-            return TransitionServiceRequestResult.Failure(
-                message: "Requested status is invalid.",
-                errorCode: "VALIDATION_NEXT_STATUS_INVALID",
+                message: "Next status or nextStageId is required.",
+                errorCode: "VALIDATION_NEXT_TARGET_REQUIRED",
                 statusCode: 400);
         }
 
@@ -73,8 +68,83 @@ internal sealed class ServiceRequestLifecycleService : IServiceRequestLifecycleS
                 statusCode: 409);
         }
 
+        var configuredStages = await this.stageRepository.ListByTenantAsync(principal.TenantId, cancellationToken);
+        var configuredStageTransitions = await this.stageTransitionRepository.ListByTenantAsync(principal.TenantId, cancellationToken);
+
+        ServiceRequestStatus parsedNextStatus;
+        Guid? resolvedCurrentStageId = request.CurrentStageId;
+        Guid? resolvedNextStageId = null;
+
+        if (configuredStages.Count == 0 || configuredStageTransitions.Count == 0)
+        {
+            return TransitionServiceRequestResult.Failure(
+                message: "Request lifecycle is not configured for this tenant.",
+                errorCode: "REQUEST_LIFECYCLE_NOT_CONFIGURED",
+                statusCode: 400);
+        }
+
+        {
+            if (!resolvedCurrentStageId.HasValue
+                || configuredStages.All(x => x.Id != resolvedCurrentStageId.Value))
+            {
+                resolvedCurrentStageId = configuredStages
+                    .Where(x => string.Equals(x.StatusCode, request.Status.ToString(), StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(x => x.DisplayOrder)
+                    .Select(x => (Guid?)x.Id)
+                    .FirstOrDefault();
+            }
+
+            if (Guid.TryParse(nextStageId?.Trim(), out var parsedNextStageId) && parsedNextStageId != Guid.Empty)
+            {
+                resolvedNextStageId = configuredStages.Any(x => x.Id == parsedNextStageId)
+                    ? parsedNextStageId
+                    : null;
+            }
+
+            if (!resolvedNextStageId.HasValue && !string.IsNullOrWhiteSpace(nextStatus))
+            {
+                resolvedNextStageId = configuredStages
+                    .Where(x => string.Equals(x.StatusCode, nextStatus.Trim(), StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(x.DisplayName, nextStatus.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(x => x.DisplayOrder)
+                    .Select(x => (Guid?)x.Id)
+                    .FirstOrDefault();
+            }
+
+            if (!resolvedCurrentStageId.HasValue || !resolvedNextStageId.HasValue)
+            {
+                return TransitionServiceRequestResult.Failure(
+                    message: "Requested lifecycle stage is invalid.",
+                    errorCode: "VALIDATION_NEXT_STAGE_INVALID",
+                    statusCode: 400);
+            }
+
+            var nextStage = configuredStages.First(x => x.Id == resolvedNextStageId.Value);
+            if (!Enum.TryParse<ServiceRequestStatus>(nextStage.StatusCode.Trim(), ignoreCase: true, out parsedNextStatus))
+            {
+                return TransitionServiceRequestResult.Failure(
+                    message: "Requested stage is not mapped to a valid service request status.",
+                    errorCode: "VALIDATION_NEXT_STATUS_INVALID",
+                    statusCode: 400);
+            }
+
+            var stageTransitionAllowed = configuredStageTransitions.Any(x =>
+                x.FromStageId == resolvedCurrentStageId.Value
+                && x.ToStageId == resolvedNextStageId.Value
+                && x.IsEnabled);
+
+            if (!stageTransitionAllowed)
+            {
+                return TransitionServiceRequestResult.Failure(
+                    message: "Requested lifecycle stage transition is not allowed.",
+                    errorCode: "REQUEST_TRANSITION_INVALID",
+                    statusCode: 400);
+            }
+        }
+
         // Treat duplicate writes to the current status as idempotent success.
-        if (request.Status == parsedNextStatus)
+        if (request.Status == parsedNextStatus
+            && (!resolvedNextStageId.HasValue || request.CurrentStageId == resolvedNextStageId))
         {
             var duplicatePayload = new TransitionedServiceRequestPayload(
                 RequestId: request.Id,
@@ -87,25 +157,6 @@ internal sealed class ServiceRequestLifecycleService : IServiceRequestLifecycleS
             return TransitionServiceRequestResult.Success(duplicatePayload);
         }
 
-        var hasConfiguredTransitions = await this.transitionRepository
-            .HasConfiguredTransitionsAsync(principal.TenantId, cancellationToken);
-
-        var isAllowedTransition = hasConfiguredTransitions
-            ? await this.transitionRepository.IsEnabledTransitionAsync(
-                principal.TenantId,
-                request.Status,
-                parsedNextStatus,
-                cancellationToken)
-            : ServiceRequestStateTransitions.CanTransition(request.Status, parsedNextStatus);
-
-        if (!isAllowedTransition)
-        {
-            return TransitionServiceRequestResult.Failure(
-                message: $"Invalid request transition: {request.Status} -> {parsedNextStatus}.",
-                errorCode: "REQUEST_TRANSITION_INVALID",
-                statusCode: 400);
-        }
-
         var previousStatus = request.Status;
         var previousResponseSlaState = request.ResponseSlaState;
         var previousAssignmentSlaState = request.AssignmentSlaState;
@@ -114,6 +165,10 @@ internal sealed class ServiceRequestLifecycleService : IServiceRequestLifecycleS
         try
         {
             request.TransitionTo(parsedNextStatus);
+            if (resolvedNextStageId.HasValue)
+            {
+                request.SetCurrentStage(resolvedNextStageId.Value);
+            }
         }
         catch (InvalidOperationException ex)
         {

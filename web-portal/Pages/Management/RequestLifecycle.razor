@@ -15,7 +15,8 @@
         Notice="@Notice"
         ErrorMessage="@ErrorMessage"
         OnRefresh="ReloadAsync"
-        OnSave="SaveAsync" />
+        OnSave="SaveAsync"
+        Description="Define stage names/order and then enable the transitions your tenant can execute." />
 
     <AuthWarningBanner Message="@AuthWarningMessage" />
 
@@ -27,7 +28,43 @@
     }
     else
     {
-        <LifecycleBoard Columns="@BoardColumns" Disabled="@IsSaving" OnToggle="ToggleTransitionAsync" />
+        <section class="token-card lifecycle-stage-editor" aria-label="Lifecycle stage editor">
+            <header class="lifecycle-stage-editor__header">
+                <h2>Stages</h2>
+                <button class="btn btn-outline-secondary" @onclick="AddStage" disabled="@IsSaving">Add Stage</button>
+            </header>
+
+            @if (Stages.Count == 0)
+            {
+                <p class="lifecycle-stage-editor__empty">No stages defined. Add at least one stage.</p>
+            }
+            else
+            {
+                <div class="lifecycle-stage-editor__rows" role="list" aria-label="Lifecycle stages">
+                    @for (var i = 0; i < Stages.Count; i++)
+                    {
+                        var stage = Stages[i];
+                        <div class="lifecycle-stage-row" role="listitem" @key="stage.StageId">
+                            <input class="form-control"
+                                   value="@stage.DisplayName"
+                                   @oninput="e => UpdateStageName(stage.StageId, e.Value?.ToString())"
+                                   placeholder="Stage name"
+                                   maxlength="120"
+                                   disabled="@IsSaving"
+                                   aria-label="Stage display name" />
+
+                            <div class="lifecycle-stage-row__actions">
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => MoveStageUp(stage.StageId)" disabled="@(IsSaving || i == 0)">Up</button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => MoveStageDown(stage.StageId)" disabled="@(IsSaving || i == Stages.Count - 1)">Down</button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveStage(stage.StageId)" disabled="@(IsSaving || Stages.Count <= 1)">Remove</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <LifecycleBoard Columns="@BoardColumns" Disabled="@(IsSaving || Stages.Count == 0)" OnToggle="ToggleTransitionAsync" />
     }
 </section>
 
@@ -35,6 +72,47 @@
     .lifecycle-shell {
         display: grid;
         gap: var(--space-4);
+    }
+
+    .lifecycle-stage-editor {
+        display: grid;
+        gap: var(--space-3);
+    }
+
+    .lifecycle-stage-editor__header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .lifecycle-stage-editor__header h2 {
+        font-size: var(--font-size-md);
+        margin: 0;
+    }
+
+    .lifecycle-stage-editor__rows {
+        display: grid;
+        gap: var(--space-2);
+    }
+
+    .lifecycle-stage-row {
+        display: grid;
+        gap: var(--space-2);
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .lifecycle-stage-row__actions {
+        display: flex;
+        gap: var(--space-1);
+    }
+
+    .lifecycle-stage-editor__empty {
+        color: var(--color-text-muted);
+        margin: 0;
+    }
+
+    .lifecycle-loading {
+        color: var(--color-text-muted);
     }
 
     .lifecycle-header {
@@ -83,10 +161,6 @@
 
     .lifecycle-error {
         color: var(--color-text-primary);
-    }
-
-    .lifecycle-loading {
-        color: var(--color-text-muted);
     }
 
     .lifecycle-board {
@@ -210,6 +284,12 @@
         }
     }
 
+    @@media (max-width: 900px) {
+        .lifecycle-stage-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
     @@media (max-width: 768px) {
         .lifecycle-board__grid {
             grid-template-columns: repeat(2, minmax(220px, 1fr));
@@ -233,20 +313,8 @@
         "Cancelled",
     ];
 
-    private static readonly (string From, string To)[] PlaceholderTransitions =
-    [
-        ("New", "Assigned"),
-        ("New", "Cancelled"),
-        ("Assigned", "InProgress"),
-        ("Assigned", "OnHold"),
-        ("Assigned", "Cancelled"),
-        ("InProgress", "OnHold"),
-        ("InProgress", "Completed"),
-        ("OnHold", "InProgress"),
-        ("OnHold", "Cancelled"),
-    ];
-
     private readonly HashSet<string> TransitionSelections = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<EditableStage> Stages = [];
 
     private IReadOnlyList<LifecycleColumnModel> BoardColumns { get; set; } = [];
 
@@ -262,7 +330,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        this.ApplyPlaceholderData();
         await this.ReloadAsync();
     }
 
@@ -274,17 +341,35 @@
 
         try
         {
-            var transitions = await this.LifecycleApiClient.GetAsync();
+            var lifecycle = await this.LifecycleApiClient.GetAsync();
             this.AuthWarningMessage = null;
             this.TransitionSelections.Clear();
+            this.Stages.Clear();
 
-            foreach (var transition in transitions)
+            foreach (var stage in lifecycle.Stages.OrderBy(x => x.DisplayOrder))
             {
-                if (transition.IsEnabled
-                    && !string.IsNullOrWhiteSpace(transition.FromStatus)
-                    && !string.IsNullOrWhiteSpace(transition.ToStatus))
+                var stageId = EnsureGuid(stage.StageId);
+                this.Stages.Add(new EditableStage(
+                    stageId,
+                    stage.StatusCode?.Trim() ?? "New",
+                    stage.DisplayName?.Trim() ?? "Stage",
+                    stage.DisplayOrder));
+            }
+
+            if (this.Stages.Count == 0)
+            {
+                SeedDefaultStages();
+            }
+
+            NormalizeStageOrdering();
+
+            foreach (var transition in lifecycle.Items)
+            {
+                var fromStageId = EnsureGuid(transition.FromStageId);
+                var toStageId = EnsureGuid(transition.ToStageId);
+                if (transition.IsEnabled && fromStageId != Guid.Empty && toStageId != Guid.Empty)
                 {
-                    this.TransitionSelections.Add(BuildKey(transition.FromStatus, transition.ToStatus));
+                    this.TransitionSelections.Add(BuildKey(fromStageId, toStageId));
                 }
             }
 
@@ -331,22 +416,39 @@
 
         try
         {
+            if (this.Stages.Count == 0)
+            {
+                this.ErrorMessage = "At least one stage is required.";
+                return;
+            }
+
             if (this.TransitionSelections.Count == 0)
             {
                 this.ErrorMessage = "At least one transition must remain enabled.";
                 return;
             }
 
+            NormalizeStageOrdering();
             var payload = new UpdateServiceRequestLifecycleRequest
             {
+                Stages = this.Stages
+                    .OrderBy(x => x.DisplayOrder)
+                    .Select(x => new UpdateServiceRequestLifecycleStageRequest
+                    {
+                        StageId = x.StageId.ToString(),
+                        StatusCode = x.StatusCode,
+                        DisplayName = x.DisplayName,
+                        DisplayOrder = x.DisplayOrder,
+                    })
+                    .ToArray(),
                 Items = this.TransitionSelections
                     .Select(ParseKey)
                     .Where(x => x.HasValue)
                     .Select(x => x!.Value)
                     .Select(x => new UpdateServiceRequestLifecycleTransitionRequest
                     {
-                        FromStatus = x.From,
-                        ToStatus = x.To,
+                        FromStageId = x.FromStageId.ToString(),
+                        ToStageId = x.ToStageId.ToString(),
                     })
                     .ToArray(),
             };
@@ -354,14 +456,27 @@
             var persisted = await this.LifecycleApiClient.UpdateAsync(payload);
             this.AuthWarningMessage = null;
             this.TransitionSelections.Clear();
+            this.Stages.Clear();
 
-            foreach (var transition in persisted)
+            foreach (var stage in persisted.Stages.OrderBy(x => x.DisplayOrder))
             {
-                if (transition.IsEnabled
-                    && !string.IsNullOrWhiteSpace(transition.FromStatus)
-                    && !string.IsNullOrWhiteSpace(transition.ToStatus))
+                var stageId = EnsureGuid(stage.StageId);
+                this.Stages.Add(new EditableStage(
+                    stageId,
+                    stage.StatusCode?.Trim() ?? "New",
+                    stage.DisplayName?.Trim() ?? "Stage",
+                    stage.DisplayOrder));
+            }
+
+            NormalizeStageOrdering();
+
+            foreach (var transition in persisted.Items)
+            {
+                var fromStageId = EnsureGuid(transition.FromStageId);
+                var toStageId = EnsureGuid(transition.ToStageId);
+                if (transition.IsEnabled && fromStageId != Guid.Empty && toStageId != Guid.Empty)
                 {
-                    this.TransitionSelections.Add(BuildKey(transition.FromStatus, transition.ToStatus));
+                    this.TransitionSelections.Add(BuildKey(fromStageId, toStageId));
                 }
             }
 
@@ -381,43 +496,113 @@
         }
     }
 
-    private void ApplyPlaceholderData()
+    private void AddStage()
     {
-        this.TransitionSelections.Clear();
+        var nextOrder = this.Stages.Count;
+        var stageNumber = this.Stages.Count + 1;
+        this.Stages.Add(new EditableStage(Guid.NewGuid(), "InProgress", $"Stage {stageNumber}", nextOrder));
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
 
-        foreach (var transition in PlaceholderTransitions)
+    private void RemoveStage(Guid stageId)
+    {
+        _ = this.Stages.RemoveAll(x => x.StageId == stageId);
+        var keysToRemove = this.TransitionSelections
+            .Where(x => x.Contains(stageId.ToString("N"), StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        foreach (var key in keysToRemove)
         {
-            this.TransitionSelections.Add(BuildKey(transition.From, transition.To));
+            this.TransitionSelections.Remove(key);
         }
 
-        this.RebuildBoard();
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
+
+    private void MoveStageUp(Guid stageId)
+    {
+        var index = this.Stages.FindIndex(x => x.StageId == stageId);
+        if (index <= 0)
+        {
+            return;
+        }
+
+        (this.Stages[index - 1], this.Stages[index]) = (this.Stages[index], this.Stages[index - 1]);
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
+
+    private void MoveStageDown(Guid stageId)
+    {
+        var index = this.Stages.FindIndex(x => x.StageId == stageId);
+        if (index < 0 || index >= this.Stages.Count - 1)
+        {
+            return;
+        }
+
+        (this.Stages[index], this.Stages[index + 1]) = (this.Stages[index + 1], this.Stages[index]);
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
+
+    private void UpdateStageName(Guid stageId, string? newName)
+    {
+        var stage = this.Stages.FirstOrDefault(x => x.StageId == stageId);
+        if (stage is null)
+        {
+            return;
+        }
+
+        stage.DisplayName = string.IsNullOrWhiteSpace(newName) ? "Stage" : newName.Trim();
+        RebuildBoard();
+    }
+
+    private void SeedDefaultStages()
+    {
+        this.Stages.Clear();
+        for (var i = 0; i < Statuses.Length; i++)
+        {
+            var status = Statuses[i];
+            this.Stages.Add(new EditableStage(Guid.NewGuid(), status, status, i));
+        }
+    }
+
+    private void NormalizeStageOrdering()
+    {
+        for (var i = 0; i < this.Stages.Count; i++)
+        {
+            this.Stages[i].DisplayOrder = i;
+        }
     }
 
     private void RebuildBoard()
     {
-        this.BoardColumns = MapTransitionsToBoard(this.TransitionSelections);
+        this.BoardColumns = MapTransitionsToBoard(this.Stages.OrderBy(x => x.DisplayOrder).ToArray(), this.TransitionSelections);
     }
 
-    private static IReadOnlyList<LifecycleColumnModel> MapTransitionsToBoard(IReadOnlySet<string> enabledTransitions)
+    private static IReadOnlyList<LifecycleColumnModel> MapTransitionsToBoard(IReadOnlyList<EditableStage> stages, IReadOnlySet<string> enabledTransitions)
     {
-        var rankByStatus = Statuses
-            .Select((status, index) => new { status, index })
-            .ToDictionary(x => x.status, x => x.index, StringComparer.OrdinalIgnoreCase);
+        var rankByStageId = stages
+            .Select((stage, index) => new { stage.StageId, index })
+            .ToDictionary(x => x.StageId, x => x.index);
 
-        return Statuses
-            .Select(fromStatus =>
+        return stages
+            .Select(fromStage =>
             {
-                var cards = Statuses
-                    .Where(toStatus => !string.Equals(fromStatus, toStatus, StringComparison.OrdinalIgnoreCase))
-                    .Select(toStatus =>
+                var cards = stages
+                    .Where(toStage => toStage.StageId != fromStage.StageId)
+                    .Select(toStage =>
                     {
-                        var key = BuildKey(fromStatus, toStatus);
-                        var direction = ResolveDirection(fromStatus, toStatus, rankByStatus);
+                        var key = BuildKey(fromStage.StageId, toStage.StageId);
+                        var direction = ResolveDirection(fromStage.StageId, toStage.StageId, rankByStageId);
                         var (badge, indicator) = ResolveDirectionPresentation(direction);
 
                         return new LifecycleTransitionCardModel(
-                            FromStatus: fromStatus,
-                            ToStatus: toStatus,
+                            FromStageId: fromStage.StageId.ToString(),
+                            ToStageId: toStage.StageId.ToString(),
+                            FromStatus: fromStage.DisplayName,
+                            ToStatus: toStage.DisplayName,
                             IsEnabled: enabledTransitions.Contains(key),
                             Direction: direction,
                             BadgeLabel: badge,
@@ -426,18 +611,18 @@
                     })
                     .ToArray();
 
-                return new LifecycleColumnModel(fromStatus, cards);
+                return new LifecycleColumnModel(fromStage.StageId.ToString(), fromStage.DisplayName, cards);
             })
             .ToArray();
     }
 
     private static LifecycleTransitionDirection ResolveDirection(
-        string fromStatus,
-        string toStatus,
-        IReadOnlyDictionary<string, int> rankByStatus)
+        Guid fromStageId,
+        Guid toStageId,
+        IReadOnlyDictionary<Guid, int> rankByStageId)
     {
-        var fromRank = rankByStatus.TryGetValue(fromStatus, out var fromValue) ? fromValue : 0;
-        var toRank = rankByStatus.TryGetValue(toStatus, out var toValue) ? toValue : 0;
+        var fromRank = rankByStageId.TryGetValue(fromStageId, out var fromValue) ? fromValue : 0;
+        var toRank = rankByStageId.TryGetValue(toStageId, out var toValue) ? toValue : 0;
 
         if (toRank > fromRank)
         {
@@ -462,12 +647,12 @@
         };
     }
 
-    private static string BuildKey(string fromStatus, string toStatus)
+    private static string BuildKey(Guid fromStageId, Guid toStageId)
     {
-        return $"{fromStatus.Trim().ToUpperInvariant()}->{toStatus.Trim().ToUpperInvariant()}";
+        return $"{fromStageId:N}->{toStageId:N}";
     }
 
-    private static (string From, string To)? ParseKey(string key)
+    private static (Guid FromStageId, Guid ToStageId)? ParseKey(string key)
     {
         var parts = key.Split("->", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 2)
@@ -475,11 +660,40 @@
             return null;
         }
 
-        return (parts[0], parts[1]);
+        if (!Guid.TryParse(parts[0], out var from) || !Guid.TryParse(parts[1], out var to))
+        {
+            return null;
+        }
+
+        return (from, to);
+    }
+
+    private static Guid EnsureGuid(string? value)
+    {
+        return Guid.TryParse(value, out var parsed) ? parsed : Guid.Empty;
     }
 
     private static bool IsAuthFailure(HttpStatusCode statusCode)
     {
         return statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden;
+    }
+
+    private sealed class EditableStage
+    {
+        public EditableStage(Guid stageId, string statusCode, string displayName, int displayOrder)
+        {
+            StageId = stageId;
+            StatusCode = statusCode;
+            DisplayName = displayName;
+            DisplayOrder = displayOrder;
+        }
+
+        public Guid StageId { get; }
+
+        public string StatusCode { get; set; }
+
+        public string DisplayName { get; set; }
+
+        public int DisplayOrder { get; set; }
     }
 }

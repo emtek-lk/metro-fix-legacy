@@ -4,6 +4,7 @@ using GTEK.FSM.Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GtekFsmDbContext))]
-    partial class GtekFsmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416054914_Phase14LifecycleStagesConfig")]
+    partial class Phase14LifecycleStagesConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -311,9 +314,6 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2(3)")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<Guid?>("CurrentStageId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("CustomerUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -367,9 +367,6 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("UQ_ServiceRequests_TenantId_ActiveJobId")
                         .HasFilter("[ActiveJobId] IS NOT NULL");
-
-                    b.HasIndex("TenantId", "CurrentStageId")
-                        .HasDatabaseName("IX_ServiceRequests_TenantId_CurrentStageId");
 
                     b.HasIndex("TenantId", "CustomerUserId")
                         .HasDatabaseName("IX_ServiceRequests_TenantId_CustomerUserId");
@@ -907,13 +904,6 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .HasPrincipalKey("TenantId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_ServiceRequests_Jobs_TenantId_ActiveJobId");
-
-                    b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStage", null)
-                        .WithMany()
-                        .HasForeignKey("TenantId", "CurrentStageId")
-                        .HasPrincipalKey("TenantId", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("FK_ServiceRequests_ServiceRequestLifecycleStages_TenantId_CurrentStageId");
 
                     b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.User", null)
                         .WithMany()

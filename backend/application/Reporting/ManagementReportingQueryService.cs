@@ -13,6 +13,7 @@ internal sealed class ManagementReportingQueryService : IManagementReportingQuer
     private const int MaxTrendSampleRows = 500;
 
     private readonly IServiceRequestRepository serviceRequestRepository;
+    private readonly IServiceRequestLifecycleStageRepository stageRepository;
     private readonly IJobRepository jobRepository;
     private readonly IWorkerProfileRepository workerProfileRepository;
     private readonly IAuditLogRepository auditLogRepository;
@@ -20,12 +21,14 @@ internal sealed class ManagementReportingQueryService : IManagementReportingQuer
 
     public ManagementReportingQueryService(
         IServiceRequestRepository serviceRequestRepository,
+        IServiceRequestLifecycleStageRepository stageRepository,
         IJobRepository jobRepository,
         IWorkerProfileRepository workerProfileRepository,
         IAuditLogRepository auditLogRepository,
         IDecisioningMetricsCollector decisioningMetricsCollector)
     {
         this.serviceRequestRepository = serviceRequestRepository;
+        this.stageRepository = stageRepository;
         this.jobRepository = jobRepository;
         this.workerProfileRepository = workerProfileRepository;
         this.auditLogRepository = auditLogRepository;
@@ -58,13 +61,26 @@ internal sealed class ManagementReportingQueryService : IManagementReportingQuer
                 CreatedToUtc: nowUtc),
             cancellationToken);
 
-        var completedRequests = await this.serviceRequestRepository.CountAsync(
-            new ServiceRequestQuerySpecification(
-                TenantId: principal.TenantId,
-                Status: ServiceRequestStatus.Completed,
-                CreatedFromUtc: windowFromUtc,
-                CreatedToUtc: nowUtc),
-            cancellationToken);
+        var configuredStages = await this.stageRepository.ListByTenantAsync(principal.TenantId, cancellationToken);
+        var completedStageIds = configuredStages
+            .Where(x => string.Equals(x.StatusCode, ServiceRequestStatus.Completed.ToString(), StringComparison.OrdinalIgnoreCase))
+            .Select(x => x.Id)
+            .ToArray();
+
+        var completedRequests = 0;
+        if (completedStageIds.Length > 0)
+        {
+            foreach (var stageId in completedStageIds)
+            {
+                completedRequests += await this.serviceRequestRepository.CountAsync(
+                    new ServiceRequestQuerySpecification(
+                        TenantId: principal.TenantId,
+                        CurrentStageId: stageId,
+                        CreatedFromUtc: windowFromUtc,
+                        CreatedToUtc: nowUtc),
+                    cancellationToken);
+            }
+        }
 
         var activeJobs = await this.jobRepository.CountAsync(
             new JobQuerySpecification(

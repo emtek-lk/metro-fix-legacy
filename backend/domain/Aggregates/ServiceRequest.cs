@@ -31,6 +31,8 @@ public sealed class ServiceRequest
 
     public ServiceRequestStatus Status { get; private set; }
 
+    public Guid? CurrentStageId { get; private set; }
+
     public Guid? ActiveJobId { get; private set; }
 
     public DateTime? ResponseDueAtUtc { get; private set; }
@@ -92,6 +94,11 @@ public sealed class ServiceRequest
         var previousStatus = this.Status;
         this.Status = nextStatus;
         this.AddDomainEvent(new ServiceRequestStatusChangedDomainEvent(this.Id, this.TenantId, previousStatus, nextStatus));
+    }
+
+    public void SetCurrentStage(Guid? stageId)
+    {
+        this.CurrentStageId = stageId;
     }
 
     public void UnlinkJob()

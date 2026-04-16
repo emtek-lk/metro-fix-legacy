@@ -7,7 +7,7 @@ public sealed class ServiceRequestLifecycleDefinitionResult
         string message,
         string? errorCode,
         int? statusCode,
-        IReadOnlyList<QueriedServiceRequestLifecycleTransition>? payload)
+        QueriedServiceRequestLifecycleDefinition? payload)
     {
         this.IsSuccess = isSuccess;
         this.Message = message;
@@ -24,10 +24,10 @@ public sealed class ServiceRequestLifecycleDefinitionResult
 
     public int? StatusCode { get; }
 
-    public IReadOnlyList<QueriedServiceRequestLifecycleTransition>? Payload { get; }
+    public QueriedServiceRequestLifecycleDefinition? Payload { get; }
 
     public static ServiceRequestLifecycleDefinitionResult Success(
-        IReadOnlyList<QueriedServiceRequestLifecycleTransition> payload,
+        QueriedServiceRequestLifecycleDefinition payload,
         string message)
     {
         return new ServiceRequestLifecycleDefinitionResult(true, message, null, null, payload);

@@ -36,6 +36,9 @@ public sealed class ServiceRequestConfiguration : IEntityTypeConfiguration<Servi
             .HasDefaultValue(ServiceRequestStatus.New)
             .IsRequired();
 
+        builder.Property(x => x.CurrentStageId)
+            .IsRequired(false);
+
         builder.Property(x => x.ActiveJobId)
             .IsRequired(false);
 
@@ -94,6 +97,9 @@ public sealed class ServiceRequestConfiguration : IEntityTypeConfiguration<Servi
         builder.HasIndex(x => new { x.TenantId, x.Status })
             .HasDatabaseName("IX_ServiceRequests_TenantId_Status");
 
+        builder.HasIndex(x => new { x.TenantId, x.CurrentStageId })
+            .HasDatabaseName("IX_ServiceRequests_TenantId_CurrentStageId");
+
         builder.HasIndex(x => new { x.TenantId, x.CustomerUserId })
             .HasDatabaseName("IX_ServiceRequests_TenantId_CustomerUserId");
 
@@ -121,6 +127,13 @@ public sealed class ServiceRequestConfiguration : IEntityTypeConfiguration<Servi
             .HasPrincipalKey(x => new { x.TenantId, x.Id })
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("FK_ServiceRequests_Jobs_TenantId_ActiveJobId");
+
+        builder.HasOne<ServiceRequestLifecycleStage>()
+            .WithMany()
+            .HasForeignKey(x => new { x.TenantId, x.CurrentStageId })
+            .HasPrincipalKey(x => new { x.TenantId, x.Id })
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_ServiceRequests_ServiceRequestLifecycleStages_TenantId_CurrentStageId");
 
         builder.Ignore(x => x.DomainEvents);
     }

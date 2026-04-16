@@ -29,6 +29,10 @@ public class GtekFsmDbContext : DbContext
 
     public DbSet<ServiceRequestLifecycleTransition> ServiceRequestLifecycleTransitions => this.Set<ServiceRequestLifecycleTransition>();
 
+    public DbSet<ServiceRequestLifecycleStage> ServiceRequestLifecycleStages => this.Set<ServiceRequestLifecycleStage>();
+
+    public DbSet<ServiceRequestLifecycleStageTransition> ServiceRequestLifecycleStageTransitions => this.Set<ServiceRequestLifecycleStageTransition>();
+
     public DbSet<WorkerProfile> WorkerProfiles => this.Set<WorkerProfile>();
 
     public DbSet<Feedback> Feedback => this.Set<Feedback>();
@@ -64,6 +68,12 @@ public class GtekFsmDbContext : DbContext
             .HasQueryFilter(x => !x.IsDeleted);
 
         modelBuilder.Entity<ServiceRequestLifecycleTransition>()
+            .HasQueryFilter(x => !x.IsDeleted);
+
+        modelBuilder.Entity<ServiceRequestLifecycleStage>()
+            .HasQueryFilter(x => !x.IsDeleted);
+
+        modelBuilder.Entity<ServiceRequestLifecycleStageTransition>()
             .HasQueryFilter(x => !x.IsDeleted);
 
         modelBuilder.Entity<WorkerProfile>()

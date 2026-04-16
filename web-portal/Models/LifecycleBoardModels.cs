@@ -8,6 +8,8 @@ public enum LifecycleTransitionDirection
 }
 
 public sealed record LifecycleTransitionCardModel(
+    string FromStageId,
+    string ToStageId,
     string FromStatus,
     string ToStatus,
     bool IsEnabled,
@@ -18,5 +20,6 @@ public sealed record LifecycleTransitionCardModel(
     bool IsImmutable = false);
 
 public sealed record LifecycleColumnModel(
+    string StageId,
     string Status,
     IReadOnlyList<LifecycleTransitionCardModel> Transitions);
