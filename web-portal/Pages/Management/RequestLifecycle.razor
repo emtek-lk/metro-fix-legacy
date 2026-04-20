@@ -1,0 +1,699 @@
+@page "/management/request-lifecycle"
+@using System.Net
+@using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests.Requests
+@using GTEK.FSM.Shared.Contracts.Api.Contracts.Requests.Responses
+@using GTEK.FSM.WebPortal.Models
+@using GTEK.FSM.WebPortal.Services.Management
+@inject IManagementRequestLifecycleApiClient LifecycleApiClient
+
+<PageTitle>Management Request Lifecycle</PageTitle>
+
+<section class="lifecycle-shell">
+    <HeaderSection
+        IsLoading="@IsLoading"
+        IsSaving="@IsSaving"
+        Notice="@Notice"
+        ErrorMessage="@ErrorMessage"
+        OnRefresh="ReloadAsync"
+        OnSave="SaveAsync"
+        Description="Define stage names/order and then enable the transitions your tenant can execute." />
+
+    <AuthWarningBanner Message="@AuthWarningMessage" />
+
+    @if (IsLoading)
+    {
+        <div class="token-card lifecycle-loading" role="status" aria-live="polite">
+            Loading lifecycle transitions...
+        </div>
+    }
+    else
+    {
+        <section class="token-card lifecycle-stage-editor" aria-label="Lifecycle stage editor">
+            <header class="lifecycle-stage-editor__header">
+                <h2>Stages</h2>
+                <button class="btn btn-outline-secondary" @onclick="AddStage" disabled="@IsSaving">Add Stage</button>
+            </header>
+
+            @if (Stages.Count == 0)
+            {
+                <p class="lifecycle-stage-editor__empty">No stages defined. Add at least one stage.</p>
+            }
+            else
+            {
+                <div class="lifecycle-stage-editor__rows" role="list" aria-label="Lifecycle stages">
+                    @for (var i = 0; i < Stages.Count; i++)
+                    {
+                        var stage = Stages[i];
+                        <div class="lifecycle-stage-row" role="listitem" @key="stage.StageId">
+                            <input class="form-control"
+                                   value="@stage.DisplayName"
+                                   @oninput="e => UpdateStageName(stage.StageId, e.Value?.ToString())"
+                                   placeholder="Stage name"
+                                   maxlength="120"
+                                   disabled="@IsSaving"
+                                   aria-label="Stage display name" />
+
+                            <div class="lifecycle-stage-row__actions">
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => MoveStageUp(stage.StageId)" disabled="@(IsSaving || i == 0)">Up</button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => MoveStageDown(stage.StageId)" disabled="@(IsSaving || i == Stages.Count - 1)">Down</button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveStage(stage.StageId)" disabled="@(IsSaving || Stages.Count <= 1)">Remove</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <LifecycleBoard Columns="@BoardColumns" Disabled="@(IsSaving || Stages.Count == 0)" OnToggle="ToggleTransitionAsync" />
+    }
+</section>
+
+<style>
+    .lifecycle-shell {
+        display: grid;
+        gap: var(--space-4);
+    }
+
+    .lifecycle-stage-editor {
+        display: grid;
+        gap: var(--space-3);
+    }
+
+    .lifecycle-stage-editor__header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .lifecycle-stage-editor__header h2 {
+        font-size: var(--font-size-md);
+        margin: 0;
+    }
+
+    .lifecycle-stage-editor__rows {
+        display: grid;
+        gap: var(--space-2);
+    }
+
+    .lifecycle-stage-row {
+        display: grid;
+        gap: var(--space-2);
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .lifecycle-stage-row__actions {
+        display: flex;
+        gap: var(--space-1);
+    }
+
+    .lifecycle-stage-editor__empty {
+        color: var(--color-text-muted);
+        margin: 0;
+    }
+
+    .lifecycle-loading {
+        color: var(--color-text-muted);
+    }
+
+    .lifecycle-header {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        justify-content: space-between;
+    }
+
+    .lifecycle-header__copy {
+        display: grid;
+        gap: var(--space-2);
+    }
+
+    .lifecycle-header__title {
+        font-size: var(--font-size-xl);
+        line-height: var(--line-height-tight);
+        margin: 0;
+    }
+
+    .lifecycle-header__description {
+        color: var(--color-text-muted);
+        margin: 0;
+    }
+
+    .lifecycle-header__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+
+    .lifecycle-auth-banner {
+        margin-bottom: 0;
+    }
+
+    .lifecycle-notice,
+    .lifecycle-error {
+        margin: 0;
+        padding: 0 var(--space-1);
+    }
+
+    .lifecycle-notice {
+        color: var(--color-link-default);
+    }
+
+    .lifecycle-error {
+        color: var(--color-text-primary);
+    }
+
+    .lifecycle-board {
+        overflow-x: auto;
+        padding-bottom: var(--space-2);
+    }
+
+    .lifecycle-board__grid {
+        display: grid;
+        gap: var(--space-3);
+        grid-template-columns: repeat(6, minmax(220px, 1fr));
+        min-width: 960px;
+    }
+
+    .lifecycle-column {
+        display: grid;
+        gap: var(--space-3);
+        margin: 0;
+        padding: var(--space-3);
+    }
+
+    .lifecycle-column__header {
+        align-items: baseline;
+        border-bottom: 1px solid var(--color-border-default);
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: var(--space-2);
+    }
+
+    .lifecycle-column__title {
+        font-size: var(--font-size-md);
+        font-weight: var(--font-weight-semibold);
+        margin: 0;
+    }
+
+    .lifecycle-column__count {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+        text-transform: uppercase;
+    }
+
+    .lifecycle-column__cards {
+        display: grid;
+        gap: var(--space-2);
+    }
+
+    .lifecycle-transition-card {
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        background: var(--color-bg-surface-alt);
+        box-shadow: var(--elevation-1);
+        transition: transform 120ms ease, border-color 120ms ease;
+    }
+
+    .lifecycle-transition-card:hover {
+        transform: translateY(-1px);
+    }
+
+    .lifecycle-transition-card.is-enabled {
+        border-color: var(--color-link-default);
+    }
+
+    .lifecycle-transition-card__button {
+        background: transparent;
+        border: 0;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        display: grid;
+        gap: var(--space-1);
+        padding: var(--space-2);
+        text-align: left;
+        width: 100%;
+    }
+
+    .lifecycle-transition-card__button:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .lifecycle-transition-card__button:focus-visible {
+        outline: 2px solid var(--color-link-default);
+        outline-offset: 2px;
+    }
+
+    .lifecycle-transition-card__top {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .lifecycle-transition-card__badge {
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-sm);
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+        padding: 0 var(--space-2);
+        text-transform: uppercase;
+    }
+
+    .lifecycle-transition-card__indicator {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .lifecycle-transition-card__route {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .lifecycle-transition-card__state {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-xs);
+    }
+
+    @@media (max-width: 1200px) {
+        .lifecycle-board__grid {
+            grid-template-columns: repeat(3, minmax(220px, 1fr));
+            min-width: 680px;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .lifecycle-stage-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .lifecycle-board__grid {
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            min-width: 460px;
+        }
+
+        .lifecycle-header {
+            align-items: stretch;
+        }
+    }
+</style>
+
+@code {
+    private static readonly string[] Statuses =
+    [
+        "New",
+        "Assigned",
+        "InProgress",
+        "OnHold",
+        "Completed",
+        "Cancelled",
+    ];
+
+    private readonly HashSet<string> TransitionSelections = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<EditableStage> Stages = [];
+
+    private IReadOnlyList<LifecycleColumnModel> BoardColumns { get; set; } = [];
+
+    private bool IsLoading { get; set; }
+
+    private bool IsSaving { get; set; }
+
+    private string? ErrorMessage { get; set; }
+
+    private string? Notice { get; set; }
+
+    private string? AuthWarningMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await this.ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        this.IsLoading = true;
+        this.ErrorMessage = null;
+        this.Notice = null;
+
+        try
+        {
+            var lifecycle = await this.LifecycleApiClient.GetAsync();
+            this.AuthWarningMessage = null;
+            this.TransitionSelections.Clear();
+            this.Stages.Clear();
+
+            foreach (var stage in lifecycle.Stages.OrderBy(x => x.DisplayOrder))
+            {
+                var stageId = EnsureGuid(stage.StageId);
+                this.Stages.Add(new EditableStage(
+                    stageId,
+                    stage.StatusCode?.Trim() ?? "New",
+                    stage.DisplayName?.Trim() ?? "Stage",
+                    stage.DisplayOrder));
+            }
+
+            if (this.Stages.Count == 0)
+            {
+                SeedDefaultStages();
+            }
+
+            NormalizeStageOrdering();
+
+            foreach (var transition in lifecycle.Items)
+            {
+                var fromStageId = EnsureGuid(transition.FromStageId);
+                var toStageId = EnsureGuid(transition.ToStageId);
+                if (transition.IsEnabled && fromStageId != Guid.Empty && toStageId != Guid.Empty)
+                {
+                    this.TransitionSelections.Add(BuildKey(fromStageId, toStageId));
+                }
+            }
+
+            this.RebuildBoard();
+        }
+        catch (ManagementRequestLifecycleApiException ex)
+        {
+            this.ErrorMessage = ex.Message;
+            this.AuthWarningMessage = IsAuthFailure(ex.StatusCode)
+                ? "Your current session does not have permission to manage lifecycle transitions. Sign in with a management role to continue."
+                : null;
+        }
+        finally
+        {
+            this.IsLoading = false;
+        }
+    }
+
+    private Task ToggleTransitionAsync(LifecycleTransitionCardModel item)
+    {
+        if (item.IsImmutable || this.IsSaving)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (this.TransitionSelections.Contains(item.Key))
+        {
+            this.TransitionSelections.Remove(item.Key);
+        }
+        else
+        {
+            this.TransitionSelections.Add(item.Key);
+        }
+
+        this.RebuildBoard();
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAsync()
+    {
+        this.IsSaving = true;
+        this.ErrorMessage = null;
+        this.Notice = null;
+
+        try
+        {
+            if (this.Stages.Count == 0)
+            {
+                this.ErrorMessage = "At least one stage is required.";
+                return;
+            }
+
+            if (this.TransitionSelections.Count == 0)
+            {
+                this.ErrorMessage = "At least one transition must remain enabled.";
+                return;
+            }
+
+            NormalizeStageOrdering();
+            var payload = new UpdateServiceRequestLifecycleRequest
+            {
+                Stages = this.Stages
+                    .OrderBy(x => x.DisplayOrder)
+                    .Select(x => new UpdateServiceRequestLifecycleStageRequest
+                    {
+                        StageId = x.StageId.ToString(),
+                        StatusCode = x.StatusCode,
+                        DisplayName = x.DisplayName,
+                        DisplayOrder = x.DisplayOrder,
+                    })
+                    .ToArray(),
+                Items = this.TransitionSelections
+                    .Select(ParseKey)
+                    .Where(x => x.HasValue)
+                    .Select(x => x!.Value)
+                    .Select(x => new UpdateServiceRequestLifecycleTransitionRequest
+                    {
+                        FromStageId = x.FromStageId.ToString(),
+                        ToStageId = x.ToStageId.ToString(),
+                    })
+                    .ToArray(),
+            };
+
+            var persisted = await this.LifecycleApiClient.UpdateAsync(payload);
+            this.AuthWarningMessage = null;
+            this.TransitionSelections.Clear();
+            this.Stages.Clear();
+
+            foreach (var stage in persisted.Stages.OrderBy(x => x.DisplayOrder))
+            {
+                var stageId = EnsureGuid(stage.StageId);
+                this.Stages.Add(new EditableStage(
+                    stageId,
+                    stage.StatusCode?.Trim() ?? "New",
+                    stage.DisplayName?.Trim() ?? "Stage",
+                    stage.DisplayOrder));
+            }
+
+            NormalizeStageOrdering();
+
+            foreach (var transition in persisted.Items)
+            {
+                var fromStageId = EnsureGuid(transition.FromStageId);
+                var toStageId = EnsureGuid(transition.ToStageId);
+                if (transition.IsEnabled && fromStageId != Guid.Empty && toStageId != Guid.Empty)
+                {
+                    this.TransitionSelections.Add(BuildKey(fromStageId, toStageId));
+                }
+            }
+
+            this.RebuildBoard();
+            this.Notice = "Request lifecycle updated.";
+        }
+        catch (ManagementRequestLifecycleApiException ex)
+        {
+            this.ErrorMessage = ex.Message;
+            this.AuthWarningMessage = IsAuthFailure(ex.StatusCode)
+                ? "Save blocked by authentication or authorization policy. Verify your management session and retry."
+                : null;
+        }
+        finally
+        {
+            this.IsSaving = false;
+        }
+    }
+
+    private void AddStage()
+    {
+        var nextOrder = this.Stages.Count;
+        var stageNumber = this.Stages.Count + 1;
+        this.Stages.Add(new EditableStage(Guid.NewGuid(), "InProgress", $"Stage {stageNumber}", nextOrder));
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
+
+    private void RemoveStage(Guid stageId)
+    {
+        _ = this.Stages.RemoveAll(x => x.StageId == stageId);
+        var keysToRemove = this.TransitionSelections
+            .Where(x => x.Contains(stageId.ToString("N"), StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        foreach (var key in keysToRemove)
+        {
+            this.TransitionSelections.Remove(key);
+        }
+
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
+
+    private void MoveStageUp(Guid stageId)
+    {
+        var index = this.Stages.FindIndex(x => x.StageId == stageId);
+        if (index <= 0)
+        {
+            return;
+        }
+
+        (this.Stages[index - 1], this.Stages[index]) = (this.Stages[index], this.Stages[index - 1]);
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
+
+    private void MoveStageDown(Guid stageId)
+    {
+        var index = this.Stages.FindIndex(x => x.StageId == stageId);
+        if (index < 0 || index >= this.Stages.Count - 1)
+        {
+            return;
+        }
+
+        (this.Stages[index], this.Stages[index + 1]) = (this.Stages[index + 1], this.Stages[index]);
+        NormalizeStageOrdering();
+        RebuildBoard();
+    }
+
+    private void UpdateStageName(Guid stageId, string? newName)
+    {
+        var stage = this.Stages.FirstOrDefault(x => x.StageId == stageId);
+        if (stage is null)
+        {
+            return;
+        }
+
+        stage.DisplayName = string.IsNullOrWhiteSpace(newName) ? "Stage" : newName.Trim();
+        RebuildBoard();
+    }
+
+    private void SeedDefaultStages()
+    {
+        this.Stages.Clear();
+        for (var i = 0; i < Statuses.Length; i++)
+        {
+            var status = Statuses[i];
+            this.Stages.Add(new EditableStage(Guid.NewGuid(), status, status, i));
+        }
+    }
+
+    private void NormalizeStageOrdering()
+    {
+        for (var i = 0; i < this.Stages.Count; i++)
+        {
+            this.Stages[i].DisplayOrder = i;
+        }
+    }
+
+    private void RebuildBoard()
+    {
+        this.BoardColumns = MapTransitionsToBoard(this.Stages.OrderBy(x => x.DisplayOrder).ToArray(), this.TransitionSelections);
+    }
+
+    private static IReadOnlyList<LifecycleColumnModel> MapTransitionsToBoard(IReadOnlyList<EditableStage> stages, IReadOnlySet<string> enabledTransitions)
+    {
+        var rankByStageId = stages
+            .Select((stage, index) => new { stage.StageId, index })
+            .ToDictionary(x => x.StageId, x => x.index);
+
+        return stages
+            .Select(fromStage =>
+            {
+                var cards = stages
+                    .Where(toStage => toStage.StageId != fromStage.StageId)
+                    .Select(toStage =>
+                    {
+                        var key = BuildKey(fromStage.StageId, toStage.StageId);
+                        var direction = ResolveDirection(fromStage.StageId, toStage.StageId, rankByStageId);
+                        var (badge, indicator) = ResolveDirectionPresentation(direction);
+
+                        return new LifecycleTransitionCardModel(
+                            FromStageId: fromStage.StageId.ToString(),
+                            ToStageId: toStage.StageId.ToString(),
+                            FromStatus: fromStage.DisplayName,
+                            ToStatus: toStage.DisplayName,
+                            IsEnabled: enabledTransitions.Contains(key),
+                            Direction: direction,
+                            BadgeLabel: badge,
+                            DirectionIndicator: indicator,
+                            Key: key);
+                    })
+                    .ToArray();
+
+                return new LifecycleColumnModel(fromStage.StageId.ToString(), fromStage.DisplayName, cards);
+            })
+            .ToArray();
+    }
+
+    private static LifecycleTransitionDirection ResolveDirection(
+        Guid fromStageId,
+        Guid toStageId,
+        IReadOnlyDictionary<Guid, int> rankByStageId)
+    {
+        var fromRank = rankByStageId.TryGetValue(fromStageId, out var fromValue) ? fromValue : 0;
+        var toRank = rankByStageId.TryGetValue(toStageId, out var toValue) ? toValue : 0;
+
+        if (toRank > fromRank)
+        {
+            return LifecycleTransitionDirection.Forward;
+        }
+
+        if (toRank < fromRank)
+        {
+            return LifecycleTransitionDirection.Backflow;
+        }
+
+        return LifecycleTransitionDirection.SameStage;
+    }
+
+    private static (string Badge, string Indicator) ResolveDirectionPresentation(LifecycleTransitionDirection direction)
+    {
+        return direction switch
+        {
+            LifecycleTransitionDirection.Forward => ("Forward", "->"),
+            LifecycleTransitionDirection.Backflow => ("Backflow", "<-"),
+            _ => ("Same", "--"),
+        };
+    }
+
+    private static string BuildKey(Guid fromStageId, Guid toStageId)
+    {
+        return $"{fromStageId:N}->{toStageId:N}";
+    }
+
+    private static (Guid FromStageId, Guid ToStageId)? ParseKey(string key)
+    {
+        var parts = key.Split("->", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 2)
+        {
+            return null;
+        }
+
+        if (!Guid.TryParse(parts[0], out var from) || !Guid.TryParse(parts[1], out var to))
+        {
+            return null;
+        }
+
+        return (from, to);
+    }
+
+    private static Guid EnsureGuid(string? value)
+    {
+        return Guid.TryParse(value, out var parsed) ? parsed : Guid.Empty;
+    }
+
+    private static bool IsAuthFailure(HttpStatusCode statusCode)
+    {
+        return statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden;
+    }
+
+    private sealed class EditableStage
+    {
+        public EditableStage(Guid stageId, string statusCode, string displayName, int displayOrder)
+        {
+            StageId = stageId;
+            StatusCode = statusCode;
+            DisplayName = displayName;
+            DisplayOrder = displayOrder;
+        }
+
+        public Guid StageId { get; }
+
+        public string StatusCode { get; set; }
+
+        public string DisplayName { get; set; }
+
+        public int DisplayOrder { get; set; }
+    }
+}

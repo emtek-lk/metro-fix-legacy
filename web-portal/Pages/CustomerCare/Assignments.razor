@@ -15,8 +15,14 @@
 
 <PageTitle>Customer Care Assignments</PageTitle>
 
-<h1>Customer Care Assignments</h1>
-<OperationalRealtimeStatusBadge State="@realtimeConnectionState" />
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Customer Care Assignments"
+	Description="Assignment coordination workspace with live worker-state updates and decision controls.">
+	<Actions>
+		<OperationalRealtimeStatusBadge State="@realtimeConnectionState" />
+	</Actions>
+</PortalSectionHeader>
 
 <ResilienceErrorBoundary @ref="errorBoundary">
 	<DataFetchStateDisplay
@@ -35,6 +41,7 @@
 			OnDecisionTriggered="@HandleDecision" />
 	</DataFetchStateDisplay>
 </ResilienceErrorBoundary>
+</section>
 
 @code {
 	private ResilienceErrorBoundary? errorBoundary;

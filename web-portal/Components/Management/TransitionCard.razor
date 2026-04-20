@@ -1,0 +1,48 @@
+@namespace GTEK.FSM.WebPortal.Components.Management
+@using GTEK.FSM.WebPortal.Models
+
+<div class="lifecycle-transition-card @(Item.IsEnabled ? "is-enabled" : "")"
+     role="listitem">
+    <button class="lifecycle-transition-card__button"
+            @onclick="ToggleAsync"
+            @onkeydown="HandleKeyDown"
+            disabled="@(Disabled || Item.IsImmutable)"
+            aria-pressed="@Item.IsEnabled"
+            aria-label="@AriaLabel">
+        <span class="lifecycle-transition-card__top">
+            <span class="lifecycle-transition-card__badge">@Item.BadgeLabel</span>
+            <span class="lifecycle-transition-card__indicator" aria-hidden="true">@Item.DirectionIndicator</span>
+        </span>
+        <span class="lifecycle-transition-card__route">@Item.FromStatus -> @Item.ToStatus</span>
+        <span class="lifecycle-transition-card__state">@(Item.IsEnabled ? "Enabled" : "Disabled")</span>
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public LifecycleTransitionCardModel Item { get; set; } = default!;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public EventCallback<LifecycleTransitionCardModel> OnToggle { get; set; }
+
+    private string AriaLabel =>
+        $"Transition {Item.FromStatus} to {Item.ToStatus}. Current state {(Item.IsEnabled ? "enabled" : "disabled")}.";
+
+    private Task ToggleAsync()
+    {
+        return this.OnToggle.HasDelegate
+            ? this.OnToggle.InvokeAsync(this.Item)
+            : Task.CompletedTask;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or " ")
+        {
+            await this.ToggleAsync();
+        }
+    }
+}

@@ -34,6 +34,7 @@ builder.Services.AddScoped<IRequestWorkspaceApiClient, RequestWorkspaceApiClient
 builder.Services.AddScoped<IManagementWorkersApiClient, ManagementWorkersApiClient>();
 builder.Services.AddScoped<IManagementSubscriptionsApiClient, ManagementSubscriptionsApiClient>();
 builder.Services.AddScoped<IManagementCategoriesApiClient, ManagementCategoriesApiClient>();
+builder.Services.AddScoped<IManagementRequestLifecycleApiClient, ManagementRequestLifecycleApiClient>();
 builder.Services.AddScoped<IManagementReportsApiClient, ManagementReportsApiClient>();
 builder.Services.AddScoped<IPortalAccessTokenProvider, PortalAuthStateAccessTokenProvider>();
 builder.Services.AddScoped<IOperationalRealtimeClient, SignalROperationalRealtimeClient>();

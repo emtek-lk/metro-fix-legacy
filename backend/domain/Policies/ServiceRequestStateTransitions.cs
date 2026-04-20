@@ -7,24 +7,30 @@ namespace GTEK.FSM.Backend.Domain.Policies;
 /// </summary>
 public static class ServiceRequestStateTransitions
 {
+    private static readonly HashSet<(ServiceRequestStatus From, ServiceRequestStatus To)> DefaultTransitions = new()
+    {
+        (ServiceRequestStatus.New, ServiceRequestStatus.Assigned),
+        (ServiceRequestStatus.New, ServiceRequestStatus.Cancelled),
+        (ServiceRequestStatus.Assigned, ServiceRequestStatus.InProgress),
+        (ServiceRequestStatus.Assigned, ServiceRequestStatus.OnHold),
+        (ServiceRequestStatus.Assigned, ServiceRequestStatus.Cancelled),
+        (ServiceRequestStatus.InProgress, ServiceRequestStatus.OnHold),
+        (ServiceRequestStatus.InProgress, ServiceRequestStatus.Completed),
+        (ServiceRequestStatus.InProgress, ServiceRequestStatus.Cancelled),
+        (ServiceRequestStatus.OnHold, ServiceRequestStatus.Assigned),
+        (ServiceRequestStatus.OnHold, ServiceRequestStatus.InProgress),
+        (ServiceRequestStatus.OnHold, ServiceRequestStatus.Cancelled),
+        (ServiceRequestStatus.Completed, ServiceRequestStatus.Completed),
+        (ServiceRequestStatus.Cancelled, ServiceRequestStatus.Cancelled),
+    };
+
     public static bool CanTransition(ServiceRequestStatus from, ServiceRequestStatus to)
     {
-        return (from, to) switch
-        {
-            (ServiceRequestStatus.New, ServiceRequestStatus.Assigned) => true,
-            (ServiceRequestStatus.New, ServiceRequestStatus.Cancelled) => true,
-            (ServiceRequestStatus.Assigned, ServiceRequestStatus.InProgress) => true,
-            (ServiceRequestStatus.Assigned, ServiceRequestStatus.OnHold) => true,
-            (ServiceRequestStatus.Assigned, ServiceRequestStatus.Cancelled) => true,
-            (ServiceRequestStatus.InProgress, ServiceRequestStatus.OnHold) => true,
-            (ServiceRequestStatus.InProgress, ServiceRequestStatus.Completed) => true,
-            (ServiceRequestStatus.InProgress, ServiceRequestStatus.Cancelled) => true,
-            (ServiceRequestStatus.OnHold, ServiceRequestStatus.Assigned) => true,
-            (ServiceRequestStatus.OnHold, ServiceRequestStatus.InProgress) => true,
-            (ServiceRequestStatus.OnHold, ServiceRequestStatus.Cancelled) => true,
-            (ServiceRequestStatus.Completed, ServiceRequestStatus.Completed) => true,
-            (ServiceRequestStatus.Cancelled, ServiceRequestStatus.Cancelled) => true,
-            _ => false
-        };
+        return DefaultTransitions.Contains((from, to));
+    }
+
+    public static IReadOnlyCollection<(ServiceRequestStatus From, ServiceRequestStatus To)> GetDefaultTransitions()
+    {
+        return DefaultTransitions;
     }
 }

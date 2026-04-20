@@ -6,15 +6,20 @@
 
 <PageTitle>Management Categories</PageTitle>
 
-<h1>Management Categories</h1>
-
-<div class="categories-actions">
-	<label class="categories-checkbox">
-		<input type="checkbox" @bind="IncludeDisabled" /> Include disabled
-	</label>
-	<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
-	<button @onclick="SaveReorderAsync" disabled="@(!HasPendingReorder || IsSaving)">Save Reorder</button>
-</div>
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Management Categories"
+	Description="Category catalog controls, ordering rules, and enablement management.">
+	<Actions>
+		<div class="categories-actions portal-inline-actions">
+			<label class="categories-checkbox">
+				<input type="checkbox" @bind="IncludeDisabled" /> Include disabled
+			</label>
+			<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
+			<button @onclick="SaveReorderAsync" disabled="@(!HasPendingReorder || IsSaving)">Save Reorder</button>
+		</div>
+	</Actions>
+</PortalSectionHeader>
 
 @if (!string.IsNullOrWhiteSpace(Notice))
 {
@@ -26,8 +31,8 @@
 	<p class="categories-error">@ErrorMessage</p>
 }
 
-<section class="categories-layout">
-	<article class="categories-panel">
+<section class="categories-layout portal-grid-2">
+	<article class="categories-panel portal-panel">
 		<h2>@(EditTarget is null ? "Create Category" : "Edit Category")</h2>
 		<div class="categories-form">
 			<label>Code</label>
@@ -53,7 +58,7 @@
 		</div>
 	</article>
 
-	<article class="categories-panel">
+	<article class="categories-panel portal-panel">
 		<h2>Category Catalog</h2>
 		@if (IsLoading)
 		{
@@ -100,19 +105,15 @@
 		}
 	</article>
 </section>
+</section>
 
 <style>
 	.categories-layout {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		align-items: start;
 	}
 
 	.categories-panel {
-		border: 1px solid #d8dde6;
-		border-radius: 8px;
-		padding: 1rem;
-		background: #ffffff;
+		padding: var(--space-4);
 	}
 
 	.categories-actions {
@@ -154,11 +155,16 @@
 	}
 
 	.categories-error {
-		color: #b42318;
+		color: var(--color-text-primary);
 	}
 
 	.categories-notice {
-		color: #175cd3;
+		color: var(--color-link-default);
+	}
+
+	.categories-table th,
+	.categories-table td {
+		border-bottom: 1px solid var(--color-border-default);
 	}
 </style>
 

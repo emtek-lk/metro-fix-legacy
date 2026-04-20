@@ -46,6 +46,9 @@ public static class DependencyInjection
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IServiceRequestLifecycleTransitionRepository, ServiceRequestLifecycleTransitionRepository>();
+        services.AddScoped<IServiceRequestLifecycleStageRepository, ServiceRequestLifecycleStageRepository>();
+        services.AddScoped<IServiceRequestLifecycleStageTransitionRepository, ServiceRequestLifecycleStageTransitionRepository>();
         services.AddScoped<IWorkerProfileRepository, WorkerProfileRepository>();
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();

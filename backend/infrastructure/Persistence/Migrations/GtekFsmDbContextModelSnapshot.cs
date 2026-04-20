@@ -17,7 +17,7 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -311,6 +311,9 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2(3)")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<Guid?>("CurrentStageId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("CustomerUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -365,6 +368,9 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("UQ_ServiceRequests_TenantId_ActiveJobId")
                         .HasFilter("[ActiveJobId] IS NOT NULL");
 
+                    b.HasIndex("TenantId", "CurrentStageId")
+                        .HasDatabaseName("IX_ServiceRequests_TenantId_CurrentStageId");
+
                     b.HasIndex("TenantId", "CustomerUserId")
                         .HasDatabaseName("IX_ServiceRequests_TenantId_CustomerUserId");
 
@@ -372,6 +378,160 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("IX_ServiceRequests_TenantId_Status");
 
                     b.ToTable("ServiceRequests", (string)null);
+                });
+
+            modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2(3)")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("StatusCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2(3)")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_ServiceRequestLifecycleStages");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("AK_ServiceRequestLifecycleStages_TenantId_Id");
+
+                    b.HasIndex("TenantId", "DisplayName")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_ServiceRequestLifecycleStages_TenantId_DisplayName");
+
+                    b.HasIndex("TenantId", "DisplayOrder")
+                        .HasDatabaseName("IX_ServiceRequestLifecycleStages_TenantId_DisplayOrder");
+
+                    b.ToTable("ServiceRequestLifecycleStages", (string)null);
+                });
+
+            modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStageTransition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2(3)")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("FromStageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ToStageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2(3)")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_ServiceRequestLifecycleStageTransitions");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("AK_ServiceRequestLifecycleStageTransitions_TenantId_Id");
+
+                    b.HasIndex("TenantId", "ToStageId");
+
+                    b.HasIndex("TenantId", "FromStageId", "ToStageId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_ServiceRequestLifecycleStageTransitions_TenantId_From_To");
+
+                    b.ToTable("ServiceRequestLifecycleStageTransitions", (string)null);
+                });
+
+            modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleTransition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2(3)")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("FromStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2(3)")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id")
+                        .HasName("PK_ServiceRequestLifecycleTransitions");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("AK_ServiceRequestLifecycleTransitions_TenantId_Id");
+
+                    b.HasIndex("TenantId", "FromStatus", "ToStatus")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_ServiceRequestLifecycleTransitions_TenantId_From_To");
+
+                    b.ToTable("ServiceRequestLifecycleTransitions", (string)null);
                 });
 
             modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.Subscription", b =>
@@ -748,6 +908,13 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_ServiceRequests_Jobs_TenantId_ActiveJobId");
 
+                    b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStage", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CurrentStageId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ServiceRequests_ServiceRequestLifecycleStages_TenantId_CurrentStageId");
+
                     b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.User", null)
                         .WithMany()
                         .HasForeignKey("TenantId", "CustomerUserId")
@@ -755,6 +922,52 @@ namespace GTEK.FSM.Backend.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_ServiceRequests_Users_TenantId_CustomerUserId");
+                });
+
+            modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStage", b =>
+                {
+                    b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ServiceRequestLifecycleStages_Tenants_TenantId");
+                });
+
+            modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStageTransition", b =>
+                {
+                    b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ServiceRequestLifecycleStageTransitions_Tenants_TenantId");
+
+                    b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStage", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "FromStageId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ServiceRequestLifecycleStageTransitions_Stages_From");
+
+                    b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleStage", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "ToStageId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ServiceRequestLifecycleStageTransitions_Stages_To");
+                });
+
+            modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.ServiceRequestLifecycleTransition", b =>
+                {
+                    b.HasOne("GTEK.FSM.Backend.Domain.Aggregates.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ServiceRequestLifecycleTransitions_Tenants_TenantId");
                 });
 
             modelBuilder.Entity("GTEK.FSM.Backend.Domain.Aggregates.Subscription", b =>

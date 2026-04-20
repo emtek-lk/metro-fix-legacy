@@ -12,6 +12,7 @@ public enum ServiceRequestSortField
 public sealed record ServiceRequestQuerySpecification(
     Guid TenantId,
     Guid? CustomerUserId = null,
+    Guid? CurrentStageId = null,
     ServiceRequestStatus? Status = null,
     DateTime? CreatedFromUtc = null,
     DateTime? CreatedToUtc = null,

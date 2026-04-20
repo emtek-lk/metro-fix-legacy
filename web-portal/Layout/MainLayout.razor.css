@@ -1,11 +1,17 @@
 .page {
-    min-height: 100vh;
+    height: 100vh;
     display: grid;
     grid-template-columns: 240px minmax(0, 1fr);
     grid-template-rows: 3.5rem 1fr;
     grid-template-areas:
         "top-bar top-bar"
         "side-nav content";
+    overflow: hidden;
+    transition: grid-template-columns var(--duration-normal, 200ms) ease;
+}
+
+.page.page--nav-compact {
+    grid-template-columns: 60px minmax(0, 1fr);
 }
 
 .top-bar {
@@ -22,7 +28,8 @@
 .side-nav {
     grid-area: side-nav;
     background-image: linear-gradient(180deg, var(--sidebar-grad-start) 0%, var(--sidebar-grad-end) 70%);
-    min-height: calc(100vh - 3.5rem);
+    min-height: 0;
+    overflow: hidden;
 }
 
 .content-area {
@@ -30,6 +37,9 @@
     display: block;
     background-color: var(--color-bg-page);
     min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .content {
@@ -64,12 +74,23 @@
 
 @media (max-width: 640.98px) {
     .page {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
         grid-template-columns: 1fr;
         grid-template-rows: 3.5rem auto auto;
         grid-template-areas:
             "top-bar"
             "side-nav"
             "content";
+    }
+
+    .content-area {
+        overflow: visible;
+    }
+
+    .page.page--nav-compact {
+        grid-template-columns: 1fr;
     }
 }
 

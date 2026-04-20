@@ -1,0 +1,29 @@
+@namespace GTEK.FSM.WebPortal.Components.Management
+@using GTEK.FSM.WebPortal.Models
+
+<section class="lifecycle-column token-card" aria-label="From @Column.Status">
+    <header class="lifecycle-column__header">
+        <h2 class="lifecycle-column__title">@Column.Status</h2>
+        <span class="lifecycle-column__count">@EnabledCount/@Column.Transitions.Count enabled</span>
+    </header>
+
+    <div class="lifecycle-column__cards" role="list" aria-label="Allowed transitions from @Column.Status">
+        @foreach (var transition in Column.Transitions)
+        {
+            <TransitionCard Item="transition" Disabled="Disabled" OnToggle="OnToggle" />
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public LifecycleColumnModel Column { get; set; } = default!;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public EventCallback<LifecycleTransitionCardModel> OnToggle { get; set; }
+
+    private int EnabledCount => this.Column.Transitions.Count(x => x.IsEnabled);
+}

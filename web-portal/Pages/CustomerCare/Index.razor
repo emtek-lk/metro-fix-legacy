@@ -1,6 +1,276 @@
 @page "/customer-care"
+@using GTEK.FSM.WebPortal.Components
+@using GTEK.FSM.WebPortal.Models
+@using GTEK.FSM.WebPortal.Services
+@using GTEK.FSM.WebPortal.Services.Realtime
+
+@inject NavigationManager Navigation
+@inject ResilientDataFetcher Fetcher
+@inject IOperationalRealtimeClient RealtimeClient
+
+@implements IDisposable
 
 <PageTitle>Customer Care</PageTitle>
 
-<h1>Customer Care</h1>
-<p>Role landing placeholder for customer support operations.</p>
+<section class="portal-page-shell">
+	<PortalSectionHeader
+		Title="Customer Care"
+		Description="Role landing area for live triage, queue control, assignment follow-through, and SLA posture monitoring.">
+		<Actions>
+			<OperationalRealtimeStatusBadge State="@realtimeConnectionState" />
+		</Actions>
+	</PortalSectionHeader>
+
+	<ResilienceErrorBoundary @ref="errorBoundary">
+		<DataFetchStateDisplay
+			State="@fetchState.State"
+			LoadingMessage="Loading customer care overview..."
+			ErrorMessage="@fetchState.ErrorMessage"
+			StaleMessage="Overview is cached; live operational values may be slightly delayed."
+			PartialMessage="Overview loaded with partial customer care context."
+			RetryingMessage="@($"Retrying customer care overview... Attempt {fetchState.RetryAttempts}")"
+			AllowStaleRender="true"
+			OnRetry="@HandleRetry"
+			OnDismiss="@HandleDismiss">
+			@if (Overview is not null)
+			{
+				<section class="customer-care-overview-shell">
+					<section class="mgmt-kpi-grid">
+						@foreach (var card in Overview.Kpis)
+						{
+							<article class="mgmt-kpi-card" @key="card.Title">
+								<p class="mgmt-kpi-title">@card.Title</p>
+								<p class="mgmt-kpi-value">@card.Value</p>
+								<p class="mgmt-kpi-delta @(card.Delta >= 0 ? "positive" : "negative")">
+									@(card.Delta >= 0 ? "+" : string.Empty)@card.Delta.ToString("0.0")% vs previous snapshot
+								</p>
+							</article>
+						}
+					</section>
+
+					<section class="portal-grid-2 customer-care-overview-grid">
+						<article class="audit-panel">
+							<header class="audit-panel-header">
+								<h2>Pipeline Snapshot</h2>
+								<span class="audit-muted">Current demand distribution by stage</span>
+							</header>
+							<div class="customer-care-metric-list">
+								@foreach (var stage in Overview.PipelineStages)
+								{
+									<div class="oversight-item" @key="stage.Label">
+										<div>
+											<p class="oversight-title">@stage.Label</p>
+											<p class="audit-muted">@stage.Description</p>
+										</div>
+										<span class="audit-pill low">@stage.Value</span>
+									</div>
+								}
+							</div>
+						</article>
+
+						<article class="audit-panel">
+							<header class="audit-panel-header">
+								<h2>SLA Risk Summary</h2>
+								<span class="audit-muted">At-risk and breach posture for triage focus</span>
+							</header>
+							<div class="customer-care-metric-list">
+								@foreach (var item in Overview.SlaItems)
+								{
+									<div class="oversight-item" @key="item.Label">
+										<div>
+											<p class="oversight-title">@item.Label</p>
+											<p class="audit-muted">@item.Description</p>
+										</div>
+										<span class="audit-pill @item.PillClass">@item.Value</span>
+									</div>
+								}
+							</div>
+						</article>
+
+						<article class="audit-panel">
+							<header class="audit-panel-header">
+								<h2>Assignment Load</h2>
+								<span class="audit-muted">Dispatch workload and worker coordination cues</span>
+							</header>
+							<div class="customer-care-metric-list">
+								@foreach (var item in Overview.AssignmentItems)
+								{
+									<div class="oversight-item" @key="item.Label">
+										<div>
+											<p class="oversight-title">@item.Label</p>
+											<p class="audit-muted">@item.Description</p>
+										</div>
+										<span class="audit-pill @item.PillClass">@item.Value</span>
+									</div>
+								}
+							</div>
+						</article>
+
+						<article class="audit-panel">
+							<header class="audit-panel-header">
+								<h2>Quick Links</h2>
+								<span class="audit-muted">Jump straight into active customer care workflows</span>
+							</header>
+							<div class="customer-care-link-grid">
+								@foreach (var link in Overview.QuickLinks)
+								{
+									<button class="mgmt-drill-card customer-care-link-card" @onclick="() => OpenLink(link.Route)" @key="link.Title">
+										<span class="mgmt-drill-title">@link.Title</span>
+										<span class="mgmt-drill-caption">@link.Caption</span>
+									</button>
+								}
+							</div>
+						</article>
+					</section>
+				</section>
+			}
+		</DataFetchStateDisplay>
+	</ResilienceErrorBoundary>
+</section>
+
+<style>
+	.customer-care-overview-shell {
+		display: grid;
+		gap: var(--space-4);
+	}
+
+	.customer-care-overview-grid {
+		align-items: start;
+	}
+
+	.customer-care-metric-list {
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.customer-care-link-grid {
+		display: grid;
+		gap: var(--space-2);
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	}
+
+	.customer-care-link-card {
+		text-align: left;
+		width: 100%;
+	}
+</style>
+
+@code {
+	private ResilienceErrorBoundary? errorBoundary;
+	private FetchResult<CustomerCareOverviewModel> fetchState = new();
+	private OperationalRealtimeConnectionState realtimeConnectionState;
+
+	private CustomerCareOverviewModel? Overview => fetchState.Data;
+
+	protected override async Task OnInitializedAsync()
+	{
+		realtimeConnectionState = RealtimeClient.ConnectionState;
+		RealtimeClient.ConnectionStateChanged += HandleConnectionStateChanged;
+		await EnsureRealtimeConnectedAsync();
+		await LoadOverviewAsync();
+	}
+
+	public void Dispose()
+	{
+		RealtimeClient.ConnectionStateChanged -= HandleConnectionStateChanged;
+	}
+
+	private async Task LoadOverviewAsync()
+	{
+		try
+		{
+			fetchState = await Fetcher.FetchAsync(
+				async () =>
+				{
+					await Task.Delay(180);
+					return BuildOverview();
+				},
+				fetchState,
+				maxRetries: 2,
+				staleThresholdSeconds: 90);
+		}
+		catch (Exception ex)
+		{
+			errorBoundary?.HandleError(ex, "Failed to load customer care overview.");
+		}
+	}
+
+	private async Task HandleRetry()
+	{
+		await LoadOverviewAsync();
+	}
+
+	private void HandleDismiss()
+	{
+		fetchState.State = FetchState.Idle;
+	}
+
+	private void OpenLink(string route)
+	{
+		Navigation.NavigateTo(route);
+	}
+
+	private async Task EnsureRealtimeConnectedAsync()
+	{
+		try
+		{
+			await RealtimeClient.EnsureConnectedAsync();
+		}
+		catch
+		{
+			realtimeConnectionState = RealtimeClient.ConnectionState;
+		}
+	}
+
+	private void HandleConnectionStateChanged(OperationalRealtimeConnectionState newState)
+	{
+		_ = InvokeAsync(() =>
+		{
+			realtimeConnectionState = newState;
+			StateHasChanged();
+		});
+	}
+
+	private static CustomerCareOverviewModel BuildOverview()
+	{
+		return new CustomerCareOverviewModel(
+			[
+				new KpiCard("Open Queue", "184", 6.2),
+				new KpiCard("At-Risk SLA", "23", -1.4),
+				new KpiCard("Escalated Requests", "11", 2.8),
+				new KpiCard("Unassigned", "17", -3.1),
+			],
+			[
+				new MetricItem("Intake", "39", "New requests waiting for first action.", "low"),
+				new MetricItem("Assessment", "22", "Requests paused for verification or clarification.", "medium"),
+				new MetricItem("Dispatch", "31", "Ready for assignment or reassignment.", "allow"),
+				new MetricItem("In Progress", "74", "Field execution currently active.", "low"),
+			],
+			[
+				new MetricItem("Response At Risk", "14", "Immediate triage required in the next dispatch cycle.", "medium"),
+				new MetricItem("Response Breached", "4", "Customer updates should be prioritized now.", "high"),
+				new MetricItem("Completion Breached", "5", "Requires escalation and assignment review.", "high"),
+			],
+			[
+				new MetricItem("Available Workers", "9", "Dispatch-capable workers ready for new tasks.", "allow"),
+				new MetricItem("Busy Workers", "6", "Already carrying active field commitments.", "low"),
+				new MetricItem("Overload Risk", "3", "Workers with elevated active assignment pressure.", "medium"),
+			],
+			[
+				new QuickLinkItem("Open Pipeline", "Monitor request movement stage by stage.", "/customer-care/pipeline"),
+				new QuickLinkItem("Review Requests", "Triage queue items and operate saved views.", "/customer-care/requests"),
+				new QuickLinkItem("Manage Assignments", "Coordinate worker routing and reassignments.", "/customer-care/assignments"),
+				new QuickLinkItem("Open Communications", "Follow customer and worker communication flow.", "/customer-care/communications"),
+			]);
+	}
+
+	private sealed record KpiCard(string Title, string Value, double Delta);
+	private sealed record MetricItem(string Label, string Value, string Description, string PillClass);
+	private sealed record QuickLinkItem(string Title, string Caption, string Route);
+	private sealed record CustomerCareOverviewModel(
+		IReadOnlyList<KpiCard> Kpis,
+		IReadOnlyList<MetricItem> PipelineStages,
+		IReadOnlyList<MetricItem> SlaItems,
+		IReadOnlyList<MetricItem> AssignmentItems,
+		IReadOnlyList<QuickLinkItem> QuickLinks);
+}

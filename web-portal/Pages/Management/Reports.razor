@@ -11,7 +11,10 @@
 
 <PageTitle>Management Reports</PageTitle>
 
-<h1>Management Reports</h1>
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Management Reports"
+	Description="Governance analytics, workforce quality signals, and continuous improvement indicators." />
 
 <ResilienceErrorBoundary @ref="errorBoundary">
 	<DataFetchStateDisplay
@@ -371,6 +374,7 @@
 		}
 	</DataFetchStateDisplay>
 </ResilienceErrorBoundary>
+</section>
 
 @code {
 	private ResilienceErrorBoundary? errorBoundary;
@@ -466,6 +470,10 @@
 		gap: 0.5rem;
 		align-items: center;
 		flex-wrap: wrap;
+		background: var(--color-bg-surface);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
 	}
 
 	.trend-grid {
@@ -492,17 +500,17 @@
 	.trend-bar {
 		display: inline-block;
 		width: 20px;
-		background: #2f6fdd;
+		background: var(--color-link-default);
 		border-radius: 4px 4px 0 0;
 	}
 
 	.trend-bar.completion {
-		background: #039855;
+		background: var(--color-text-muted);
 	}
 
 	.trend-label {
 		font-size: 0.75rem;
-		color: #475467;
+		color: var(--color-text-muted);
 	}
 
 	.insight-metric-grid {
@@ -515,9 +523,9 @@
 		display: grid;
 		gap: 0.35rem;
 		padding: 0.85rem;
-		border: 1px solid #d0d5dd;
+		border: 1px solid var(--color-border-default);
 		border-radius: 0.75rem;
-		background: #f8fafc;
+		background: var(--color-bg-surface-alt);
 	}
 
 	.compact-table-wrap {

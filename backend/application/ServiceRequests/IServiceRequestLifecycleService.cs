@@ -7,6 +7,7 @@ public interface IServiceRequestLifecycleService
     Task<TransitionServiceRequestResult> TransitionAsync(
         AuthenticatedPrincipal principal,
         Guid requestId,
+        string? nextStageId,
         string? nextStatus,
         string? rowVersion,
         CancellationToken cancellationToken = default);

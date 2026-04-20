@@ -206,6 +206,7 @@ public static class V1RouteGroupExtensions
             var transition = await lifecycleService.TransitionAsync(
                 principal,
                 requestId,
+                request.NextStageId,
                 request.NextStatus,
                 request.RowVersion,
                 cancellationToken);
@@ -849,6 +850,92 @@ public static class V1RouteGroupExtensions
             };
 
             return Results.Ok(ApiResponse<GetCategoriesListResponse>.Ok(payload, result.Message, context.TraceIdentifier));
+        })
+        .RequireAuthorization(AuthorizationPolicyCatalog.ManagementFlow);
+
+        v1.MapGet("/management/request-lifecycle", async (
+            HttpContext context,
+            IAuthenticatedPrincipalAccessor principalAccessor,
+            ITenantContextAccessor tenantContextAccessor,
+            IServiceRequestLifecycleDefinitionService lifecycleDefinitionService,
+            CancellationToken cancellationToken) =>
+        {
+            var principal = principalAccessor.GetCurrent();
+            if (principal is null)
+            {
+                return BuildFailure(context, StatusCodes.Status401Unauthorized, "AUTH_UNAUTHORIZED", "Authentication is required.");
+            }
+
+            var resolvedTenantId = tenantContextAccessor.GetCurrentTenantId();
+            if (!resolvedTenantId.HasValue || resolvedTenantId.Value != principal.TenantId)
+            {
+                return BuildFailure(context, StatusCodes.Status403Forbidden, "TENANT_OWNERSHIP_MISMATCH", "Tenant ownership validation failed.");
+            }
+
+            var result = await lifecycleDefinitionService.GetAsync(principal, cancellationToken);
+            if (!result.IsSuccess || result.Payload is null)
+            {
+                return BuildFailure(
+                    context,
+                    result.StatusCode ?? StatusCodes.Status400BadRequest,
+                    result.ErrorCode ?? "REQUEST_LIFECYCLE_QUERY_FAILED",
+                    result.Message);
+            }
+
+            var payload = new GetServiceRequestLifecycleResponse
+            {
+                Stages = result.Payload.Stages.Select(MapLifecycleStage).ToArray(),
+                Items = result.Payload.Transitions.Select(MapLifecycleTransition).ToArray(),
+            };
+
+            return Results.Ok(ApiResponse<GetServiceRequestLifecycleResponse>.Ok(payload, result.Message, context.TraceIdentifier));
+        })
+        .RequireAuthorization(AuthorizationPolicyCatalog.ManagementFlow);
+
+        v1.MapPut("/management/request-lifecycle", async (
+            UpdateServiceRequestLifecycleRequest request,
+            HttpContext context,
+            IAuthenticatedPrincipalAccessor principalAccessor,
+            ITenantContextAccessor tenantContextAccessor,
+            IValidator<UpdateServiceRequestLifecycleRequest> validator,
+            IServiceRequestLifecycleDefinitionService lifecycleDefinitionService,
+            CancellationToken cancellationToken) =>
+        {
+            var principal = principalAccessor.GetCurrent();
+            if (principal is null)
+            {
+                return BuildFailure(context, StatusCodes.Status401Unauthorized, "AUTH_UNAUTHORIZED", "Authentication is required.");
+            }
+
+            var resolvedTenantId = tenantContextAccessor.GetCurrentTenantId();
+            if (!resolvedTenantId.HasValue || resolvedTenantId.Value != principal.TenantId)
+            {
+                return BuildFailure(context, StatusCodes.Status403Forbidden, "TENANT_OWNERSHIP_MISMATCH", "Tenant ownership validation failed.");
+            }
+
+            var validationFailure = await BuildValidationFailureAsync(request, validator, context, cancellationToken);
+            if (validationFailure is not null)
+            {
+                return validationFailure;
+            }
+
+            var result = await lifecycleDefinitionService.ReplaceAsync(principal, request, cancellationToken);
+            if (!result.IsSuccess || result.Payload is null)
+            {
+                return BuildFailure(
+                    context,
+                    result.StatusCode ?? StatusCodes.Status400BadRequest,
+                    result.ErrorCode ?? "REQUEST_LIFECYCLE_UPDATE_FAILED",
+                    result.Message);
+            }
+
+            var payload = new GetServiceRequestLifecycleResponse
+            {
+                Stages = result.Payload.Stages.Select(MapLifecycleStage).ToArray(),
+                Items = result.Payload.Transitions.Select(MapLifecycleTransition).ToArray(),
+            };
+
+            return Results.Ok(ApiResponse<GetServiceRequestLifecycleResponse>.Ok(payload, result.Message, context.TraceIdentifier));
         })
         .RequireAuthorization(AuthorizationPolicyCatalog.ManagementFlow);
 
@@ -1787,6 +1874,29 @@ public static class V1RouteGroupExtensions
             IsEnabled = category.IsEnabled,
             CreatedAtUtc = category.CreatedAtUtc,
             UpdatedAtUtc = category.UpdatedAtUtc,
+        };
+    }
+
+    private static ServiceRequestLifecycleStageResponse MapLifecycleStage(QueriedServiceRequestLifecycleStage stage)
+    {
+        return new ServiceRequestLifecycleStageResponse
+        {
+            StageId = stage.StageId.ToString(),
+            StatusCode = stage.StatusCode,
+            DisplayName = stage.DisplayName,
+            DisplayOrder = stage.DisplayOrder,
+        };
+    }
+
+    private static ServiceRequestLifecycleTransitionResponse MapLifecycleTransition(QueriedServiceRequestLifecycleTransition transition)
+    {
+        return new ServiceRequestLifecycleTransitionResponse
+        {
+            FromStageId = transition.FromStageId.ToString(),
+            ToStageId = transition.ToStageId.ToString(),
+            FromStatus = transition.FromStatus,
+            ToStatus = transition.ToStatus,
+            IsEnabled = transition.IsEnabled,
         };
     }
 

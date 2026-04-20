@@ -26,8 +26,12 @@ public class GetRequestsRequest
     public int? PageSize { get; set; }
 
     /// <summary>
-    /// Optional filter by request stage (maps to RequestStage enum values).
-    /// If null, requests of all stages are returned.
+    /// Optional stage filter token. Accepts a stage id (guid), stage display name, or status code.
+    /// </summary>
+    public string? StageFilter { get; set; }
+
+    /// <summary>
+    /// Legacy compatibility filter. If StageFilter is not provided, this token is resolved as stage id/name/status.
     /// </summary>
     public string? StatusFilter { get; set; }
 

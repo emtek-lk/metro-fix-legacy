@@ -6,6 +6,7 @@ using GTEK.FSM.Backend.Application.Realtime;
 using GTEK.FSM.Backend.Domain.Aggregates;
 using GTEK.FSM.Backend.Domain.Audit;
 using GTEK.FSM.Backend.Domain.Enums;
+using GTEK.FSM.Backend.Domain.Policies;
 using System.Text.Json;
 
 namespace GTEK.FSM.Backend.Application.ServiceRequests;
@@ -18,6 +19,7 @@ internal sealed class ServiceRequestAssignmentService : IServiceRequestAssignmen
     private readonly IUnitOfWork unitOfWork;
     private readonly IAuditLogWriter auditLogWriter;
     private readonly IOperationalUpdatePublisher operationalUpdatePublisher;
+    private readonly IServiceRequestLifecycleTransitionRepository transitionRepository;
     private readonly ServiceRequestSlaOptions slaOptions = new();
 
     public ServiceRequestAssignmentService(
@@ -26,7 +28,8 @@ internal sealed class ServiceRequestAssignmentService : IServiceRequestAssignmen
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
         IAuditLogWriter auditLogWriter,
-        IOperationalUpdatePublisher operationalUpdatePublisher)
+        IOperationalUpdatePublisher operationalUpdatePublisher,
+        IServiceRequestLifecycleTransitionRepository transitionRepository)
     {
         this.serviceRequestRepository = serviceRequestRepository;
         this.jobRepository = jobRepository;
@@ -34,6 +37,7 @@ internal sealed class ServiceRequestAssignmentService : IServiceRequestAssignmen
         this.unitOfWork = unitOfWork;
         this.auditLogWriter = auditLogWriter;
         this.operationalUpdatePublisher = operationalUpdatePublisher;
+        this.transitionRepository = transitionRepository;
     }
 
     public async Task<ServiceRequestAssignmentResult> AssignAsync(
@@ -114,6 +118,26 @@ internal sealed class ServiceRequestAssignmentService : IServiceRequestAssignmen
         {
             if (request.Status == ServiceRequestStatus.New)
             {
+                var hasConfiguredTransitions = await this.transitionRepository
+                    .HasConfiguredTransitionsAsync(principal.TenantId, cancellationToken);
+
+                var canAutoAssign = hasConfiguredTransitions
+                    ? await this.transitionRepository.IsEnabledTransitionAsync(
+                        principal.TenantId,
+                        ServiceRequestStatus.New,
+                        ServiceRequestStatus.Assigned,
+                        cancellationToken)
+                    : ServiceRequestStateTransitions.CanTransition(ServiceRequestStatus.New, ServiceRequestStatus.Assigned);
+
+                if (!canAutoAssign)
+                {
+                    await tx.RollbackAsync(cancellationToken);
+                    return ServiceRequestAssignmentResult.Failure(
+                        message: "Request lifecycle does not allow New -> Assigned transition.",
+                        errorCode: "REQUEST_ASSIGNMENT_INVALID_STATE",
+                        statusCode: 400);
+                }
+
                 request.TransitionTo(ServiceRequestStatus.Assigned);
             }
 

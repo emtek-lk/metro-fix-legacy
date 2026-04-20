@@ -13,8 +13,14 @@
 
 <PageTitle>Customer Care Pipeline</PageTitle>
 
-<h1>Customer Care Pipeline</h1>
-<OperationalRealtimeStatusBadge State="@realtimeConnectionState" />
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Customer Care Pipeline"
+	Description="Live dispatch board with stage-level visibility and resilient data loading.">
+	<Actions>
+		<OperationalRealtimeStatusBadge State="@realtimeConnectionState" />
+	</Actions>
+</PortalSectionHeader>
 
 <ResilienceErrorBoundary @ref="errorBoundary">
 	<DataFetchStateDisplay
@@ -33,6 +39,7 @@
 			Columns="@(fetchState.Data ?? [])" />
 	</DataFetchStateDisplay>
 </ResilienceErrorBoundary>
+</section>
 
 @code {
 	private ResilienceErrorBoundary? errorBoundary;

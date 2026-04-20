@@ -1,0 +1,53 @@
+@namespace GTEK.FSM.WebPortal.Components.Management
+
+<section class="lifecycle-header token-card" aria-label="Request lifecycle header">
+    <div class="lifecycle-header__copy">
+        <h1 class="lifecycle-header__title">@Title</h1>
+        <p class="lifecycle-header__description">@Description</p>
+    </div>
+
+    <div class="lifecycle-header__actions" role="toolbar" aria-label="Lifecycle actions">
+        <button class="btn btn-outline-secondary" @onclick="OnRefresh" disabled="@IsLoading">
+            Refresh
+        </button>
+        <button class="btn btn-primary" @onclick="OnSave" disabled="@(IsSaving || IsLoading)">
+            Save Lifecycle
+        </button>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Notice))
+{
+    <p class="lifecycle-notice" role="status">@Notice</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <p class="lifecycle-error" role="alert">@ErrorMessage</p>
+}
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Management Request Lifecycle";
+
+    [Parameter]
+    public string Description { get; set; } = "Enable the status transitions that your tenant operations are allowed to perform.";
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public bool IsSaving { get; set; }
+
+    [Parameter]
+    public string? Notice { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public EventCallback OnRefresh { get; set; }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+}

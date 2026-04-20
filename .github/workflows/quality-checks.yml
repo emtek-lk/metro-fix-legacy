@@ -74,7 +74,7 @@ jobs:
           echo "   📄 config/ANALYZER_SUPPRESSIONS_GUIDE.md"
           echo ""
 
-        - name: Validate continuous improvement cadence artifacts
+      - name: Validate continuous improvement cadence artifacts
         run: |
           python3 - <<'PY'
           import json

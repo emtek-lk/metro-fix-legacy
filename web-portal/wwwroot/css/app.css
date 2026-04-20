@@ -47,6 +47,28 @@
     --color-text-muted: var(--text-muted);
     --color-border-default: var(--border-color);
     --color-link-default: var(--link-color);
+
+    /* Semantic component tokens */
+    --color-text-label: var(--text-muted);
+    --color-input-bg: var(--surface);
+    --color-input-text: var(--text-primary);
+    --color-input-placeholder: color-mix(in srgb, var(--text-muted) 86%, transparent);
+    --color-input-border: var(--border-color);
+    --color-input-focus-border: var(--link-color);
+    --color-input-disabled-bg: var(--surface-2);
+    --color-input-disabled-text: color-mix(in srgb, var(--text-muted) 78%, transparent);
+
+    /* Bootstrap variable bridge so new components inherit theme */
+    --bs-body-bg: var(--color-bg-page);
+    --bs-body-color: var(--color-text-primary);
+    --bs-emphasis-color: var(--color-text-primary);
+    --bs-secondary-color: var(--color-text-muted);
+    --bs-tertiary-color: var(--color-text-muted);
+    --bs-secondary-bg: var(--color-bg-surface-alt);
+    --bs-tertiary-bg: var(--color-bg-surface-alt);
+    --bs-border-color: var(--color-border-default);
+    --bs-link-color: var(--color-link-default);
+    --bs-link-hover-color: var(--color-link-default);
 }
 
 [data-theme="dark"] {
@@ -85,6 +107,54 @@ h1:focus {
 
 a, .btn-link {
     color: var(--color-link-default);
+}
+
+label,
+.form-label,
+legend {
+    color: var(--color-text-label);
+}
+
+.form-text {
+    color: var(--color-text-muted);
+}
+
+.form-control,
+.form-select,
+.form-check-input {
+    border-color: var(--color-input-border);
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
+}
+
+.form-control::placeholder,
+.form-select::placeholder {
+    color: var(--color-input-placeholder);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--color-input-focus-border);
+}
+
+.form-control:disabled,
+.form-select:disabled,
+.form-control[readonly] {
+    background-color: var(--color-input-disabled-bg);
+    color: var(--color-input-disabled-text);
+}
+
+.btn-outline-secondary {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-default);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus-visible {
+    color: var(--color-text-primary);
+    border-color: var(--color-link-default);
+    background-color: color-mix(in srgb, var(--color-bg-surface) 86%, var(--color-bg-surface-alt));
 }
 
 .btn-primary {
@@ -1062,6 +1132,158 @@ code {
     .workspace-timeline-item {
         grid-template-columns: 1fr;
     }
+}
+
+.portal-page-shell {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.portal-section-header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    justify-content: space-between;
+}
+
+.portal-section-header__copy {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.portal-section-header__title {
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-tight);
+    margin: 0;
+}
+
+.portal-section-header__description {
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.portal-section-header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.portal-grid-2 {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.portal-panel {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--elevation-1);
+    padding: var(--space-4);
+}
+
+.portal-panel h2 {
+    margin: 0 0 var(--space-3) 0;
+    font-size: var(--font-size-lg);
+}
+
+.portal-inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.portal-form-grid {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.portal-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.portal-table th,
+.portal-table td {
+    border-bottom: 1px solid var(--color-border-default);
+    text-align: left;
+    padding: var(--space-2);
+    vertical-align: top;
+}
+
+.portal-message {
+    margin: 0;
+    padding: 0 var(--space-1);
+    color: var(--color-text-muted);
+}
+
+.portal-page-shell label,
+.portal-page-shell h2,
+.portal-page-shell h3 {
+    color: var(--color-text-primary);
+}
+
+.portal-page-shell input:not([type="checkbox"]):not([type="radio"]),
+.portal-page-shell select,
+.portal-page-shell textarea {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    padding: var(--space-2) var(--space-3);
+    transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.portal-page-shell input::placeholder,
+.portal-page-shell textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+}
+
+.portal-page-shell input:focus-visible,
+.portal-page-shell select:focus-visible,
+.portal-page-shell textarea:focus-visible {
+    border-color: var(--color-link-default);
+    box-shadow: 0 0 0 0.2rem rgba(243, 136, 8, 0.2);
+    outline: none;
+}
+
+.portal-page-shell input[type="checkbox"],
+.portal-page-shell input[type="radio"] {
+    accent-color: var(--color-link-default);
+}
+
+.portal-page-shell button:not(.btn):not(.btn-primary):not(.btn-outline-secondary),
+.portal-page-shell .btn-quick-action {
+    background: var(--color-bg-surface-alt);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    padding: var(--space-2) var(--space-3);
+    transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.portal-page-shell button:not(.btn):not(.btn-primary):not(.btn-outline-secondary):hover,
+.portal-page-shell .btn-quick-action:hover {
+    background: var(--color-bg-surface);
+    border-color: var(--color-link-default);
+}
+
+.portal-page-shell button:not(.btn):not(.btn-primary):not(.btn-outline-secondary):active,
+.portal-page-shell .btn-quick-action:active {
+    transform: translateY(1px);
+}
+
+.portal-page-shell button:disabled,
+.portal-page-shell input:disabled,
+.portal-page-shell select:disabled,
+.portal-page-shell textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Resilience and Data-Fetch State Patterns */

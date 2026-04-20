@@ -13,7 +13,10 @@
 
 <PageTitle>Customer Care Requests</PageTitle>
 
-<h1>Customer Care Requests</h1>
+<section class="portal-page-shell">
+<PortalSectionHeader
+	Title="Customer Care Requests"
+	Description="Queue operations with saved views, triage controls, and dispatch board context." />
 
 <ResilienceErrorBoundary @ref="errorBoundary">
 	<DataFetchStateDisplay
@@ -26,9 +29,9 @@
 		AllowStaleRender="true"
 		OnRetry="@HandleRetry"
 		OnDismiss="@HandleDismiss">
-			<section class="saved-views-panel">
+			<section class="saved-views-panel portal-panel">
 				<h2>Saved Views</h2>
-				<div class="saved-views-create">
+				<div class="saved-views-create portal-inline-actions">
 					<input placeholder="View name" @bind="NewSavedViewName" />
 					<button @onclick="SaveCurrentView" disabled="@(string.IsNullOrWhiteSpace(NewSavedViewName) || ActiveFilter.IsDefault)">Save Current Filters</button>
 				</div>
@@ -65,6 +68,7 @@
 			Columns="@DispatchBoardColumns" />
 	</DataFetchStateDisplay>
 </ResilienceErrorBoundary>
+</section>
 
 @code {
 	private ResilienceErrorBoundary? errorBoundary;
@@ -279,17 +283,11 @@
 
 <style>
 	.saved-views-panel {
-		border: 1px solid #d8dde6;
-		border-radius: 8px;
-		padding: 0.75rem;
+		padding: var(--space-3);
 		margin-bottom: 1rem;
-		background: #ffffff;
 	}
 
 	.saved-views-create {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
 		margin-bottom: 0.5rem;
 	}
 
@@ -304,7 +302,8 @@
 		gap: 0.25rem;
 		align-items: center;
 		padding: 0.2rem;
-		border: 1px solid #d0d5dd;
+		border: 1px solid var(--color-border-default);
 		border-radius: 6px;
+		background: var(--color-bg-surface-alt);
 	}
 </style>
