@@ -4,7 +4,7 @@
 @inject GTEK.FSM.WebPortal.Services.Security.PortalAuthState AuthState
 @inject NavigationManager Navigation
 
-<div class="page">
+<div class="@PageCssClass">
     <header class="top-bar px-4">
         <div class="portal-header">
             <strong>GTEK FSM Portal</strong>
@@ -22,7 +22,7 @@
     </header>
 
     <aside class="side-nav">
-        <NavMenu />
+        <NavMenu IsSidebarCollapsed="@isSidebarCollapsed" OnToggleSidebar="@ToggleSidebar" />
     </aside>
 
     <main class="content-area">
@@ -34,6 +34,9 @@
 
 @code {
     private bool _initialized;
+    private bool isSidebarCollapsed;
+
+    private string PageCssClass => isSidebarCollapsed ? "page page--nav-compact" : "page";
 
     private string CurrentThemeLabel => ThemeState.CurrentMode == GTEK.FSM.WebPortal.Services.Theme.ThemeMode.Dark
         ? "Dark"
@@ -56,6 +59,11 @@
     private async Task ToggleThemeAsync()
     {
         await ThemeState.ToggleAsync();
+    }
+
+    private void ToggleSidebar()
+    {
+        isSidebarCollapsed = !isSidebarCollapsed;
     }
 
     private async Task LogoutAsync()

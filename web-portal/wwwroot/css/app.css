@@ -47,6 +47,28 @@
     --color-text-muted: var(--text-muted);
     --color-border-default: var(--border-color);
     --color-link-default: var(--link-color);
+
+    /* Semantic component tokens */
+    --color-text-label: var(--text-muted);
+    --color-input-bg: var(--surface);
+    --color-input-text: var(--text-primary);
+    --color-input-placeholder: color-mix(in srgb, var(--text-muted) 86%, transparent);
+    --color-input-border: var(--border-color);
+    --color-input-focus-border: var(--link-color);
+    --color-input-disabled-bg: var(--surface-2);
+    --color-input-disabled-text: color-mix(in srgb, var(--text-muted) 78%, transparent);
+
+    /* Bootstrap variable bridge so new components inherit theme */
+    --bs-body-bg: var(--color-bg-page);
+    --bs-body-color: var(--color-text-primary);
+    --bs-emphasis-color: var(--color-text-primary);
+    --bs-secondary-color: var(--color-text-muted);
+    --bs-tertiary-color: var(--color-text-muted);
+    --bs-secondary-bg: var(--color-bg-surface-alt);
+    --bs-tertiary-bg: var(--color-bg-surface-alt);
+    --bs-border-color: var(--color-border-default);
+    --bs-link-color: var(--color-link-default);
+    --bs-link-hover-color: var(--color-link-default);
 }
 
 [data-theme="dark"] {
@@ -85,6 +107,54 @@ h1:focus {
 
 a, .btn-link {
     color: var(--color-link-default);
+}
+
+label,
+.form-label,
+legend {
+    color: var(--color-text-label);
+}
+
+.form-text {
+    color: var(--color-text-muted);
+}
+
+.form-control,
+.form-select,
+.form-check-input {
+    border-color: var(--color-input-border);
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
+}
+
+.form-control::placeholder,
+.form-select::placeholder {
+    color: var(--color-input-placeholder);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--color-input-focus-border);
+}
+
+.form-control:disabled,
+.form-select:disabled,
+.form-control[readonly] {
+    background-color: var(--color-input-disabled-bg);
+    color: var(--color-input-disabled-text);
+}
+
+.btn-outline-secondary {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-default);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus-visible {
+    color: var(--color-text-primary);
+    border-color: var(--color-link-default);
+    background-color: color-mix(in srgb, var(--color-bg-surface) 86%, var(--color-bg-surface-alt));
 }
 
 .btn-primary {
