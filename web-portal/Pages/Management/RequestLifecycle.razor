@@ -31,7 +31,7 @@
         <section class="token-card lifecycle-stage-editor" aria-label="Lifecycle stage editor">
             <header class="lifecycle-stage-editor__header">
                 <h2>Stages</h2>
-                <button class="btn btn-outline-secondary" @onclick="AddStage" disabled="@IsSaving">Add Stage</button>
+                <button class="btn btn-secondary btn-sm" @onclick="AddStage" disabled="@IsSaving">+ Add Stage</button>
             </header>
 
             @if (Stages.Count == 0)
@@ -45,7 +45,7 @@
                     {
                         var stage = Stages[i];
                         <div class="lifecycle-stage-row" role="listitem" @key="stage.StageId">
-                            <input class="form-control"
+                            <input class="form-control lifecycle-stage-input"
                                    value="@stage.DisplayName"
                                    @oninput="e => UpdateStageName(stage.StageId, e.Value?.ToString())"
                                    placeholder="Stage name"
@@ -54,9 +54,9 @@
                                    aria-label="Stage display name" />
 
                             <div class="lifecycle-stage-row__actions">
-                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => MoveStageUp(stage.StageId)" disabled="@(IsSaving || i == 0)">Up</button>
-                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => MoveStageDown(stage.StageId)" disabled="@(IsSaving || i == Stages.Count - 1)">Down</button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveStage(stage.StageId)" disabled="@(IsSaving || Stages.Count <= 1)">Remove</button>
+                                <button class="lifecycle-stage-action" @onclick="() => MoveStageUp(stage.StageId)" disabled="@(IsSaving || i == 0)">↑ Up</button>
+                                <button class="lifecycle-stage-action" @onclick="() => MoveStageDown(stage.StageId)" disabled="@(IsSaving || i == Stages.Count - 1)">↓ Down</button>
+                                <button class="lifecycle-stage-action lifecycle-stage-action--danger" @onclick="() => RemoveStage(stage.StageId)" disabled="@(IsSaving || Stages.Count <= 1)">Remove</button>
                             </div>
                         </div>
                     }
@@ -71,39 +71,117 @@
 <style>
     .lifecycle-shell {
         display: grid;
-        gap: var(--space-4);
+        gap: var(--space-5);
     }
 
     .lifecycle-stage-editor {
         display: grid;
         gap: var(--space-3);
+        background: var(--color-bg-surface);
+        border-radius: var(--radius-xl);
     }
 
     .lifecycle-stage-editor__header {
         align-items: center;
         display: flex;
         justify-content: space-between;
+        gap: var(--space-3);
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--color-border-default);
     }
 
     .lifecycle-stage-editor__header h2 {
-        font-size: var(--font-size-md);
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
         margin: 0;
     }
 
     .lifecycle-stage-editor__rows {
         display: grid;
-        gap: var(--space-2);
+        gap: var(--space-3);
     }
 
     .lifecycle-stage-row {
         display: grid;
-        gap: var(--space-2);
+        gap: var(--space-3);
         grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+    }
+
+    .lifecycle-stage-input {
+        min-height: 2.5rem;
+        border-radius: var(--radius-md);
+        background: var(--color-input-bg);
+        border: 1px solid var(--color-input-border);
+        color: var(--color-input-text);
+        padding: 0.5rem 0.85rem;
+        font-size: var(--font-size-sm);
+        font-family: inherit;
+        transition: border-color 140ms ease, box-shadow 140ms ease;
+        outline: none;
+    }
+
+    .lifecycle-stage-input::placeholder {
+        color: var(--color-input-placeholder);
+    }
+
+    .lifecycle-stage-input:focus {
+        border-color: var(--color-input-focus-border);
+        box-shadow: 0 0 0 3px var(--color-input-focus-ring, rgba(225,139,44,0.18));
+    }
+
+    .lifecycle-stage-input:disabled {
+        background: var(--color-input-disabled-bg);
+        color: var(--color-input-disabled-text);
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .lifecycle-stage-action {
+        min-width: 3.9rem;
+        border-radius: var(--radius-md);
+        background: var(--color-bg-surface-alt);
+        border: 1px solid var(--color-border-default);
+        color: var(--color-text-primary);
+        padding: 0.35rem 0.75rem;
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        transition: background 140ms ease, border-color 140ms ease, transform 120ms ease;
+        white-space: nowrap;
+    }
+
+    .lifecycle-stage-action:hover:not(:disabled) {
+        background: var(--color-bg-inset, var(--color-bg-surface-alt));
+        border-color: var(--color-border-strong);
+        transform: translateY(-1px);
+    }
+
+    .lifecycle-stage-action:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .lifecycle-stage-action:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .lifecycle-stage-action--danger {
+        min-width: 5.15rem;
+        background: transparent;
+        border-color: var(--color-danger-border, #FCA5A5);
+        color: var(--color-danger, #DC2626);
+    }
+
+    .lifecycle-stage-action--danger:hover:not(:disabled) {
+        background: var(--color-danger-bg, #FEE2E2);
+        border-color: var(--color-danger, #DC2626);
     }
 
     .lifecycle-stage-row__actions {
         display: flex;
-        gap: var(--space-1);
+        gap: var(--space-2);
     }
 
     .lifecycle-stage-editor__empty {
@@ -132,6 +210,7 @@
         font-size: var(--font-size-xl);
         line-height: var(--line-height-tight);
         margin: 0;
+        color: var(--color-text-primary);
     }
 
     .lifecycle-header__description {
@@ -163,64 +242,80 @@
         color: var(--color-text-primary);
     }
 
+    /* ── Lifecycle board ─────────────────────────── */
     .lifecycle-board {
         overflow-x: auto;
-        padding-bottom: var(--space-2);
+        padding-bottom: var(--space-3);
     }
 
     .lifecycle-board__grid {
         display: grid;
-        gap: var(--space-3);
+        gap: var(--space-4);
         grid-template-columns: repeat(6, minmax(220px, 1fr));
-        min-width: 960px;
+        min-width: 1080px;
     }
 
     .lifecycle-column {
         display: grid;
         gap: var(--space-3);
+        align-content: start;
         margin: 0;
-        padding: var(--space-3);
+        padding: var(--space-4);
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--color-border-default);
+        background: var(--color-bg-surface);
+        box-shadow: var(--elevation-1);
     }
 
     .lifecycle-column__header {
         align-items: baseline;
-        border-bottom: 1px solid var(--color-border-default);
+        border-bottom: 1px solid var(--color-border-subtle, var(--color-border-default));
         display: flex;
         justify-content: space-between;
-        padding-bottom: var(--space-2);
+        padding-bottom: var(--space-3);
+        gap: var(--space-2);
     }
 
     .lifecycle-column__title {
         font-size: var(--font-size-md);
         font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
         margin: 0;
     }
 
     .lifecycle-column__count {
         color: var(--color-text-muted);
-        font-size: var(--font-size-xs);
+        font-size: 0.7rem;
+        font-weight: var(--font-weight-semibold);
+        letter-spacing: 0.06em;
         text-transform: uppercase;
     }
 
     .lifecycle-column__cards {
         display: grid;
-        gap: var(--space-2);
+        gap: var(--space-3);
     }
 
+    /* ── Transition cards ────────────────────────── */
     .lifecycle-transition-card {
         border: 1px solid var(--color-border-default);
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-lg);
         background: var(--color-bg-surface-alt);
         box-shadow: var(--elevation-1);
-        transition: transform 120ms ease, border-color 120ms ease;
+        transition: transform 120ms ease, border-color 140ms ease, box-shadow 140ms ease;
+        overflow: hidden;
     }
 
     .lifecycle-transition-card:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: var(--elevation-2);
+        border-color: var(--color-border-strong);
     }
 
     .lifecycle-transition-card.is-enabled {
         border-color: var(--color-link-default);
+        box-shadow: 0 0 0 1px var(--color-link-default), var(--elevation-1);
+        background: var(--color-bg-surface);
     }
 
     .lifecycle-transition-card__button {
@@ -229,15 +324,15 @@
         color: var(--color-text-primary);
         cursor: pointer;
         display: grid;
-        gap: var(--space-1);
-        padding: var(--space-2);
+        gap: 0.45rem;
+        padding: 0.8rem;
         text-align: left;
         width: 100%;
     }
 
     .lifecycle-transition-card__button:disabled {
         cursor: not-allowed;
-        opacity: 0.7;
+        opacity: 0.55;
     }
 
     .lifecycle-transition-card__button:focus-visible {
@@ -249,38 +344,59 @@
         align-items: center;
         display: flex;
         justify-content: space-between;
+        gap: var(--space-2);
     }
 
     .lifecycle-transition-card__badge {
-        background: var(--color-bg-surface);
+        background: var(--color-bg-inset, var(--color-bg-surface-alt));
         border: 1px solid var(--color-border-default);
         border-radius: var(--radius-sm);
         color: var(--color-text-muted);
-        font-size: var(--font-size-xs);
-        padding: 0 var(--space-2);
+        font-size: 0.68rem;
+        font-weight: var(--font-weight-semibold);
+        letter-spacing: 0.07em;
+        padding: 0.15rem var(--space-2);
         text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .lifecycle-transition-card.is-enabled .lifecycle-transition-card__badge {
+        background: var(--color-accent-subtle, rgba(225,139,44,0.12));
+        border-color: var(--color-link-default);
+        color: var(--color-link-default);
     }
 
     .lifecycle-transition-card__indicator {
         color: var(--color-text-muted);
         font-size: var(--font-size-xs);
-        font-weight: var(--font-weight-semibold);
+        font-weight: var(--font-weight-bold);
+        flex-shrink: 0;
     }
 
     .lifecycle-transition-card__route {
-        font-size: var(--font-size-sm);
+        font-size: 0.8rem;
         font-weight: var(--font-weight-medium);
+        color: var(--color-text-secondary);
+        line-height: 1.4;
     }
 
     .lifecycle-transition-card__state {
-        color: var(--color-text-muted);
         font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .lifecycle-transition-card:not(.is-enabled) .lifecycle-transition-card__state {
+        color: var(--color-text-disabled, var(--color-text-muted));
+    }
+
+    .lifecycle-transition-card.is-enabled .lifecycle-transition-card__state {
+        color: var(--color-success);
     }
 
     @@media (max-width: 1200px) {
         .lifecycle-board__grid {
-            grid-template-columns: repeat(3, minmax(220px, 1fr));
-            min-width: 680px;
+            grid-template-columns: repeat(3, minmax(200px, 1fr));
+            min-width: 640px;
         }
     }
 
@@ -292,8 +408,8 @@
 
     @@media (max-width: 768px) {
         .lifecycle-board__grid {
-            grid-template-columns: repeat(2, minmax(220px, 1fr));
-            min-width: 460px;
+            grid-template-columns: repeat(2, minmax(200px, 1fr));
+            min-width: 440px;
         }
 
         .lifecycle-header {

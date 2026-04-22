@@ -33,12 +33,18 @@
 			<section class="governance-shell">
 				@if (!CanModifyGuardrails())
 				{
-					<p class="security-forbidden-message">@AuthorizationUxPolicy.GuardrailAdminTenantMessage</p>
+					<div class="notice-banner notice-banner-warning">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+						@AuthorizationUxPolicy.GuardrailAdminTenantMessage
+					</div>
 				}
 
 				@if (!string.IsNullOrWhiteSpace(securityFeedback))
 				{
-					<p class="security-forbidden-message">@securityFeedback</p>
+					<div class="notice-banner notice-banner-error" role="alert">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+						@securityFeedback
+					</div>
 				}
 
 				<section class="governance-panel">
@@ -61,9 +67,15 @@
 								{
 									<tr>
 										<td>@cap.Name</td>
-										<td>@RenderPermission(cap.Support)</td>
-										<td>@RenderPermission(cap.Manager)</td>
-										<td>@RenderPermission(cap.Admin)</td>
+										<td>
+										@if (cap.Support) { <span class="badge badge-success">Allow</span> } else { <span class="badge badge-danger">Deny</span> }
+									</td>
+									<td>
+										@if (cap.Manager) { <span class="badge badge-success">Allow</span> } else { <span class="badge badge-danger">Deny</span> }
+									</td>
+									<td>
+										@if (cap.Admin) { <span class="badge badge-success">Allow</span> } else { <span class="badge badge-danger">Deny</span> }
+									</td>
 									</tr>
 								}
 							</tbody>
@@ -84,7 +96,7 @@
 									<p class="oversight-title">@rule.Title</p>
 									<p class="audit-muted">@rule.Description</p>
 								</div>
-								<label class="guardrail-toggle">
+								<label class="toggle-switch">
 									<input type="checkbox" checked="@rule.Enabled" @onchange="(_)=> ToggleRule(rule.Id)" disabled="@(!CanModifyGuardrails())" />
 									<span>@(rule.Enabled ? "Enabled" : "Disabled")</span>
 								</label>

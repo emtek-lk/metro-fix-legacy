@@ -1,20 +1,18 @@
-﻿<div class="nav-sidebar @(IsSidebarCollapsed ? "nav-sidebar--collapsed" : "")">
+<div class="nav-sidebar @(IsSidebarCollapsed ? "nav-sidebar--collapsed" : "")">
 
     <button class="nav-brand" @onclick="HandleToggle" title="@(IsSidebarCollapsed ? "Expand menu" : "Collapse menu")" aria-label="Toggle navigation">
         <svg class="nav-brand__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
         </svg>
-        <span class="nav-brand__label">GTEK.FSM.WebPortal</span>
+        <span class="nav-brand__label">GTEK FSM</span>
     </button>
 
     <div class="nav-scrollable">
         <nav>
-            <div class="nav-section"><span class="nav-section__label">Portal</span></div>
-
             <div class="nav-item">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All" title="Home">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All" title="Dashboard">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span class="nav-label">Home</span>
+                    <span class="nav-label">Dashboard</span>
                 </NavLink>
             </div>
 

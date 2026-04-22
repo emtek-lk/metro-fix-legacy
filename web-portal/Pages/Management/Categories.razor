@@ -11,51 +11,59 @@
 	Title="Management Categories"
 	Description="Category catalog controls, ordering rules, and enablement management.">
 	<Actions>
-		<div class="categories-actions portal-inline-actions">
-			<label class="categories-checkbox">
-				<input type="checkbox" @bind="IncludeDisabled" /> Include disabled
-			</label>
-			<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
-			<button @onclick="SaveReorderAsync" disabled="@(!HasPendingReorder || IsSaving)">Save Reorder</button>
-		</div>
+			<div class="portal-inline-actions">
+				<label class="toggle-switch" style="font-size:var(--font-size-sm)">
+					<input type="checkbox" @bind="IncludeDisabled" /> Include disabled
+				</label>
+				<button class="btn btn-secondary btn-sm" @onclick="ReloadAsync" disabled="@IsLoading">Refresh Data</button>
+				<button class="btn btn-primary btn-sm" @onclick="SaveReorderAsync" disabled="@(!HasPendingReorder || IsSaving)">Save Order</button>
+			</div>
 	</Actions>
 </PortalSectionHeader>
 
 @if (!string.IsNullOrWhiteSpace(Notice))
 {
-	<p class="categories-notice">@Notice</p>
+	<div class="notice-banner notice-banner-success" role="alert">
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+		@Notice
+	</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(ErrorMessage))
 {
-	<p class="categories-error">@ErrorMessage</p>
+	<div class="notice-banner notice-banner-error" role="alert">
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+		@ErrorMessage
+	</div>
 }
 
 <section class="categories-layout portal-grid-2">
 	<article class="categories-panel portal-panel">
 		<h2>@(EditTarget is null ? "Create Category" : "Edit Category")</h2>
-		<div class="categories-form">
-			<label>Code</label>
-			<input @bind="Form.Code" />
-
-			<label>Name</label>
-			<input @bind="Form.Name" />
-
-			<label>Sort Order</label>
-			<input type="number" min="0" max="999" step="1" @bind="Form.SortOrder" />
-
-			<label class="categories-checkbox">
-				<input type="checkbox" @bind="Form.IsEnabled" /> Enabled
-			</label>
-
-			<div class="categories-form-actions">
-				<button @onclick="SaveAsync" disabled="@IsSaving">@(EditTarget is null ? "Create" : "Update")</button>
-				@if (EditTarget is not null)
-				{
-					<button @onclick="CancelEdit" disabled="@IsSaving">Cancel</button>
-				}
+			<div class="portal-form-grid">
+				<div class="form-field">
+					<label for="cat-code">Category Code</label>
+					<input id="cat-code" @bind="Form.Code" placeholder="e.g. ELEC" />
+				</div>
+				<div class="form-field">
+					<label for="cat-name">Name</label>
+					<input id="cat-name" @bind="Form.Name" placeholder="Category name" />
+				</div>
+				<div class="form-field">
+					<label for="cat-sort">Sort Order</label>
+					<input id="cat-sort" type="number" min="0" max="999" step="1" @bind="Form.SortOrder" />
+				</div>
+				<label class="toggle-switch">
+					<input type="checkbox" @bind="Form.IsEnabled" /> Enabled
+				</label>
+				<div class="portal-inline-actions" style="margin-top:var(--space-2)">
+					<button class="btn btn-primary" @onclick="SaveAsync" disabled="@IsSaving">@(EditTarget is null ? "Add Category" : "Save Changes")</button>
+					@if (EditTarget is not null)
+					{
+						<button class="btn btn-ghost" @onclick="CancelEdit" disabled="@IsSaving">Cancel</button>
+					}
+				</div>
 			</div>
-		</div>
 	</article>
 
 	<article class="categories-panel portal-panel">
@@ -86,16 +94,16 @@
 						var category = CategoryItems[i];
 						<tr>
 							<td>@category.SortOrder</td>
-							<td>@category.Code</td>
+							<td><span class="mono">@category.Code</span></td>
 							<td>@category.Name</td>
-							<td>@(category.IsEnabled ? "Yes" : "No")</td>
-							<td>
-								<button @onclick="() => MoveUp(i)" disabled="@(i == 0 || IsSaving)">Up</button>
-								<button @onclick="() => MoveDown(i)" disabled="@(i == CategoryItems.Count - 1 || IsSaving)">Down</button>
-								<button @onclick="() => BeginEdit(category)" disabled="@IsSaving">Edit</button>
+							<td>@if (category.IsEnabled) { <span class="badge badge-success">Yes</span> } else { <span class="badge badge-neutral">No</span> }</td>
+							<td class="portal-inline-actions">
+								<button class="btn btn-ghost btn-sm" @onclick="() => MoveUp(i)" disabled="@(i == 0 || IsSaving)" title="Move up">↑</button>
+								<button class="btn btn-ghost btn-sm" @onclick="() => MoveDown(i)" disabled="@(i == CategoryItems.Count - 1 || IsSaving)" title="Move down">↓</button>
+								<button class="btn btn-secondary btn-sm" @onclick="() => BeginEdit(category)" disabled="@IsSaving">Edit</button>
 								@if (category.IsEnabled)
 								{
-									<button @onclick="() => DisableAsync(category)" disabled="@IsSaving">Disable</button>
+									<button class="btn btn-danger btn-sm" @onclick="() => DisableAsync(category)" disabled="@IsSaving">Disable</button>
 								}
 							</td>
 						</tr>
@@ -107,66 +115,7 @@
 </section>
 </section>
 
-<style>
-	.categories-layout {
-		align-items: start;
-	}
 
-	.categories-panel {
-		padding: var(--space-4);
-	}
-
-	.categories-actions {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-		margin-bottom: 1rem;
-		flex-wrap: wrap;
-	}
-
-	.categories-form {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.categories-form-actions {
-		margin-top: 0.5rem;
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.categories-checkbox {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-
-	.categories-table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	.categories-table th,
-	.categories-table td {
-		border-bottom: 1px solid #e6ebf2;
-		text-align: left;
-		padding: 0.5rem;
-		vertical-align: top;
-	}
-
-	.categories-error {
-		color: var(--color-text-primary);
-	}
-
-	.categories-notice {
-		color: var(--color-link-default);
-	}
-
-	.categories-table th,
-	.categories-table td {
-		border-bottom: 1px solid var(--color-border-default);
-	}
-</style>
 
 @code {
 	private readonly CategoryEditorModel Form = new();

@@ -4,14 +4,13 @@
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.HomePage"
              Title="Home">
        <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,28" Spacing="16">
+              <VerticalStackLayout Style="{StaticResource StylePageContainer}">
                      <VerticalStackLayout Spacing="4">
-                            <Label Text="Customer Dashboard" FontSize="28" FontAttributes="Bold" />
-                            <Label Text="Track requests, active jobs, and account updates from one place."
-                                   TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+                            <Label Text="Customer Dashboard" Style="{StaticResource StylePageTitle}" />
+                            <Label Text="Track requests, active jobs, and account updates from one place." Style="{StaticResource StylePageSubtitle}" />
                      </VerticalStackLayout>
 
-                     <Border StrokeShape="RoundRectangle 20" Padding="18" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                     <Border Style="{StaticResource StyleCardBorder}">
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
                                    <Label Text="Today at a glance" FontSize="20" FontAttributes="Bold" />
                                    <Border Grid.Column="1"
@@ -19,10 +18,7 @@
                                            BackgroundColor="{AppThemeBinding Light=#FFF3E3, Dark=#5C4A34}"
                                            Padding="10,4"
                                            VerticalOptions="Start">
-                                          <Label Text="LIVE"
-                                                 FontSize="11"
-                                                 FontAttributes="Bold"
-                                                 TextColor="{AppThemeBinding Light={StaticResource ColorAccentLight}, Dark={StaticResource ColorAccentDark}}" />
+                                          <Label Text="LIVE" Style="{StaticResource StylePillLabel}" />
                                    </Border>
                                    <Label Grid.Row="1"
                                           Text="Everything important is surfaced here without leaving the home screen."
@@ -48,18 +44,18 @@
                             </Border>
                      </Grid>
 
-                     <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                     <Border Style="{StaticResource StyleCardBorder}">
                             <VerticalStackLayout Spacing="8">
-                                   <Label Text="Today" FontSize="18" FontAttributes="Bold" />
+                                   <Label Text="Today" Style="{StaticResource StyleSectionHeader}" />
                                    <Label Text="Technician check-in window: 2:00 PM - 4:00 PM" />
                                    <Label Text="Pending approval: Quote for rooftop unit service" />
                                    <Label Text="Profile reminder: verify emergency contact" />
                             </VerticalStackLayout>
                      </Border>
 
-                     <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                     <Border Style="{StaticResource StyleCardBorder}">
                             <VerticalStackLayout Spacing="8">
-                                   <Label Text="Quick Actions" FontSize="18" FontAttributes="Bold" />
+                                   <Label Text="Quick Actions" Style="{StaticResource StyleSectionHeader}" />
                                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                                           <Button Text="Track Job"
                                                   FontSize="12"

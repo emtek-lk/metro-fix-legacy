@@ -4,14 +4,14 @@
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.JobsPage"
              Title="Jobs">
        <Grid Padding="20,18,20,24" RowDefinitions="Auto,Auto,*" RowSpacing="12">
-              <Label Text="Jobs Workspace" FontSize="28" FontAttributes="Bold" />
+              <Label Text="Jobs Workspace" Style="{StaticResource StylePageTitle}" />
               <Label Grid.Row="1"
                         Text="Accept assignments, inspect job details, and publish field status updates."
-                        TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+                        Style="{StaticResource StylePageSubtitle}" />
 
               <ScrollView Grid.Row="2">
                      <VerticalStackLayout Spacing="12">
-                            <Border StrokeShape="RoundRectangle 18" Padding="12" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                            <Border Style="{StaticResource StyleCardBorder}" Padding="12">
                                    <CollectionView x:Name="JobsCollectionView"
                                                                SelectionMode="Single"
                                                                SelectionChanged="OnJobSelectionChanged"
@@ -35,9 +35,9 @@
                                    </CollectionView>
                             </Border>
 
-                            <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                            <Border Style="{StaticResource StyleCardBorder}">
                                    <VerticalStackLayout Spacing="8">
-                                          <Label Text="Job Detail" FontSize="18" FontAttributes="Bold" />
+                                          <Label Text="Job Detail" Style="{StaticResource StyleSectionHeader}" />
                                           <Label x:Name="SelectedJobTitleLabel" FontSize="16" FontAttributes="Bold" />
                                           <Label x:Name="SelectedJobDescriptionLabel" TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
                                           <Label x:Name="SelectedJobMetaLabel" FontSize="12" />

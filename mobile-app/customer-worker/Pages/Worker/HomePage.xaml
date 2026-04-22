@@ -4,14 +4,13 @@
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.HomePage"
              Title="Home">
        <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,28" Spacing="16">
+              <VerticalStackLayout Style="{StaticResource StylePageContainer}">
                      <VerticalStackLayout Spacing="4">
-                            <Label Text="Worker Dispatch" FontSize="28" FontAttributes="Bold" />
-                            <Label Text="Review available jobs, accept assignments, and update field status fast."
-                                   TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+                            <Label Text="Worker Dispatch" Style="{StaticResource StylePageTitle}" />
+                            <Label Text="Review available jobs, accept assignments, and update field status fast." Style="{StaticResource StylePageSubtitle}" />
                      </VerticalStackLayout>
 
-                     <Border StrokeShape="RoundRectangle 20" Padding="18" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                     <Border Style="{StaticResource StyleCardBorder}">
                             <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
                                    <Label Text="Field overview" FontSize="20" FontAttributes="Bold" />
                                    <Border Grid.Column="1"
@@ -44,18 +43,18 @@
                             </Border>
                      </Grid>
 
-                     <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                     <Border Style="{StaticResource StyleCardBorder}">
                             <VerticalStackLayout Spacing="8">
-                                   <Label Text="Shift Notes" FontSize="18" FontAttributes="Bold" />
+                                   <Label Text="Shift Notes" Style="{StaticResource StyleSectionHeader}" />
                                    <Label Text="Job #JOB-884 requires access card at reception." />
                                    <Label Text="Downtown route has heavy traffic after 3 PM." />
                                    <Label Text="Safety check required before generator startup tasks." />
                             </VerticalStackLayout>
                      </Border>
 
-                     <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                     <Border Style="{StaticResource StyleCardBorder}">
                             <VerticalStackLayout Spacing="8">
-                                   <Label Text="Quick Actions" FontSize="18" FontAttributes="Bold" />
+                                   <Label Text="Quick Actions" Style="{StaticResource StyleSectionHeader}" />
                                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                                           <Button Text="Accept Top"
                                                   FontSize="12"

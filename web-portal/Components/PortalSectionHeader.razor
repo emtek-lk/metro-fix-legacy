@@ -1,21 +1,22 @@
 @namespace GTEK.FSM.WebPortal.Components
 
-<section class="portal-section-header token-card" aria-label="@Title">
-    <div class="portal-section-header__copy">
-        <h1 class="portal-section-header__title">@Title</h1>
+<section class="page-header" aria-label="@Title">
+    <div class="page-header__copy">
+        <h1 class="page-header__title">@Title</h1>
         @if (!string.IsNullOrWhiteSpace(Description))
         {
-            <p class="portal-section-header__description">@Description</p>
+            <p class="page-header__description">@Description</p>
         }
     </div>
 
     @if (Actions is not null)
     {
-        <div class="portal-section-header__actions" role="toolbar" aria-label="@($"{Title} actions")">
+        <div class="page-header__actions" role="toolbar" aria-label="@($"{Title} actions")">
             @Actions
         </div>
     }
 </section>
+
 
 @code {
     [Parameter, EditorRequired]

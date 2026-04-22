@@ -11,20 +11,24 @@
 	Title="Management Subscriptions"
 	Description="Subscription governance, tenant quota visibility, and user-limit controls.">
 	<Actions>
-		<div class="subs-actions portal-inline-actions">
-			<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
-		</div>
+		<button class="btn btn-secondary btn-sm" @onclick="ReloadAsync" disabled="@IsLoading">Refresh Data</button>
 	</Actions>
 </PortalSectionHeader>
 
 @if (!string.IsNullOrWhiteSpace(Notice))
 {
-	<p class="subs-notice">@Notice</p>
+	<div class="notice-banner notice-banner-success" role="alert">
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+		@Notice
+	</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(ErrorMessage))
 {
-	<p class="subs-error">@ErrorMessage</p>
+	<div class="notice-banner notice-banner-error" role="alert">
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+		@ErrorMessage
+	</div>
 }
 
 <section class="subs-layout portal-grid-2">
@@ -53,25 +57,27 @@
 
 			@if (!IsEditing)
 			{
-				<button class="subs-edit-btn" @onclick="BeginEdit">Edit Plan</button>
+				<button class="btn btn-secondary btn-sm" @onclick="BeginEdit">Edit Plan</button>
 			}
 			else
 			{
-				<div class="subs-form">
-					<label>Plan</label>
-					<select @bind="Form.PlanCode">
-						@foreach (var plan in PlanOptions)
-						{
-							<option value="@plan">@plan</option>
-						}
-					</select>
-
-					<label>User Limit</label>
-					<input type="number" min="1" max="10000" step="1" @bind="Form.UserLimit" />
-
-					<div class="subs-form-actions">
-						<button @onclick="SaveAsync" disabled="@IsSaving">Save</button>
-						<button @onclick="CancelEdit">Cancel</button>
+				<div class="portal-form-grid">
+					<div class="form-field">
+						<label for="sub-plan">Plan</label>
+						<select id="sub-plan" @bind="Form.PlanCode">
+							@foreach (var plan in PlanOptions)
+							{
+								<option value="@plan">@plan</option>
+							}
+						</select>
+					</div>
+					<div class="form-field">
+						<label for="sub-limit">User Limit</label>
+						<input id="sub-limit" type="number" min="1" max="10000" step="1" @bind="Form.UserLimit" />
+					</div>
+					<div class="portal-inline-actions">
+						<button class="btn btn-primary" @onclick="SaveAsync" disabled="@IsSaving">Save Changes</button>
+						<button class="btn btn-ghost" @onclick="CancelEdit">Cancel</button>
 					</div>
 				</div>
 			}
@@ -113,7 +119,16 @@
 						<tr>
 							<td>@user.DisplayName</td>
 							<td>@user.ExternalIdentity</td>
-							<td>@(user.IsWithinCurrentPlanLimit ? "Yes" : "No")</td>
+							<td>
+								@if (user.IsWithinCurrentPlanLimit)
+								{
+									<span class="badge badge-success">Yes</span>
+								}
+								else
+								{
+									<span class="badge badge-neutral">No</span>
+								}
+							</td>
 						</tr>
 					}
 				</tbody>
@@ -121,117 +136,18 @@
 
 			@if (UsersTotalPages > 1)
 			{
-				<div class="subs-pager">
-					<button @onclick="PrevUsersPage" disabled="@(UsersPage <= 1 || IsUsersLoading)">Prev</button>
-					<span>Page @UsersPage of @UsersTotalPages</span>
-					<button @onclick="NextUsersPage" disabled="@(UsersPage >= UsersTotalPages || IsUsersLoading)">Next</button>
-				</div>
+					<div class="portal-inline-actions" style="margin-top:var(--space-2)">
+						<button class="btn btn-secondary btn-sm" @onclick="PrevUsersPage" disabled="@(UsersPage <= 1 || IsUsersLoading)">← Prev</button>
+						<span style="font-size:var(--font-size-sm);color:var(--color-text-muted)">Page @UsersPage of @UsersTotalPages</span>
+						<button class="btn btn-secondary btn-sm" @onclick="NextUsersPage" disabled="@(UsersPage >= UsersTotalPages || IsUsersLoading)">Next →</button>
+					</div>
 			}
 		}
 	</article>
 </section>
 </section>
 
-<style>
-	.subs-layout {
-		align-items: start;
-	}
 
-	.subs-panel {
-		padding: var(--space-4);
-	}
-
-	.subs-actions {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-		margin-bottom: 1rem;
-	}
-
-	.subs-users-actions {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-		margin-bottom: 0.75rem;
-		flex-wrap: wrap;
-	}
-
-	.subs-search {
-		min-width: 200px;
-	}
-
-	.subs-detail {
-		display: grid;
-		grid-template-columns: 1fr 2fr;
-		gap: 0.35rem 0.75rem;
-		margin-bottom: 1rem;
-	}
-
-	.subs-detail dt {
-		font-weight: 600;
-		color: var(--color-text-muted);
-	}
-
-	.subs-plan-badge {
-		display: inline-block;
-		padding: 0.1rem 0.5rem;
-		border-radius: 4px;
-		font-size: 0.85rem;
-		font-weight: 600;
-		text-transform: uppercase;
-	}
-
-	.subs-plan-free,
-	.subs-plan-pro,
-	.subs-plan-enterprise {
-		background: var(--color-bg-surface-alt);
-		color: var(--color-text-primary);
-		border: 1px solid var(--color-border-default);
-	}
-
-	.subs-edit-btn {
-		margin-top: 0.5rem;
-	}
-
-	.subs-form {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.subs-form-actions {
-		margin-top: 0.5rem;
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.subs-table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	.subs-table th,
-	.subs-table td {
-		border-bottom: 1px solid var(--color-border-default);
-		text-align: left;
-		padding: 0.5rem;
-		vertical-align: top;
-	}
-
-	.subs-pager {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-		margin-top: 0.75rem;
-	}
-
-	.subs-error {
-		color: var(--color-text-primary);
-	}
-
-	.subs-notice {
-		color: var(--color-link-default);
-	}
-</style>
 
 @code {
 	private static readonly string[] PlanOptions = ["FREE", "PRO", "ENTERPRISE"];

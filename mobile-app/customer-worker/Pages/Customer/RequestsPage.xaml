@@ -4,16 +4,16 @@
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.RequestsPage"
              Title="Requests">
        <Grid Padding="20,18,20,24" RowDefinitions="Auto,Auto,*" RowSpacing="12">
-              <Label Text="Request Center" FontSize="28" FontAttributes="Bold" />
+              <Label Text="Request Center" Style="{StaticResource StylePageTitle}" />
               <Label Grid.Row="1"
                         Text="Select a request to inspect details and live stage progression."
-                        TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+                        Style="{StaticResource StylePageSubtitle}" />
 
               <ScrollView Grid.Row="2">
                      <VerticalStackLayout Spacing="12">
-                            <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                            <Border Style="{StaticResource StyleCardBorder}">
                                    <VerticalStackLayout Spacing="8">
-                                          <Label Text="Create New Request" FontSize="18" FontAttributes="Bold" />
+                                          <Label Text="Create New Request" Style="{StaticResource StyleSectionHeader}" />
                                           <Label Text="Choose a category and describe the issue so dispatch can route it quickly."
                                                  FontSize="12"
                                                  TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
@@ -39,7 +39,7 @@
                                    </VerticalStackLayout>
                             </Border>
 
-                            <Border StrokeShape="RoundRectangle 18" Padding="12" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                            <Border Style="{StaticResource StyleCardBorder}" Padding="12">
                                    <CollectionView x:Name="RequestsCollectionView"
                                                                SelectionMode="Single"
                                                                SelectionChanged="OnRequestSelectionChanged"
@@ -63,9 +63,9 @@
                                    </CollectionView>
                             </Border>
 
-                            <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
+                            <Border Style="{StaticResource StyleCardBorder}">
                                    <VerticalStackLayout Spacing="8">
-                                          <Label Text="Request Detail" FontSize="18" FontAttributes="Bold" />
+                                          <Label Text="Request Detail" Style="{StaticResource StyleSectionHeader}" />
                                           <Label x:Name="SelectedRequestTitleLabel" FontSize="16" FontAttributes="Bold" />
                                           <Label x:Name="SelectedRequestDescriptionLabel"
                                                     TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />

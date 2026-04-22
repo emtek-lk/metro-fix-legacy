@@ -1,14 +1,142 @@
-﻿@page "/"
+@page "/"
+@using GTEK.FSM.WebPortal.Services.Security
+@inject NavigationManager Navigation
+@inject PortalAuthState AuthState
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard — GTEK FSM</PageTitle>
 
 <section class="portal-page-shell">
 	<PortalSectionHeader
-		Title="Portal Shell"
-		Description="Use the navigation to open Customer Care and Management operations with the unified board-style UX." />
+		Title="@($"Welcome back{(!string.IsNullOrWhiteSpace(AuthState.Session?.DisplayName) ? $", {AuthState.Session!.DisplayName.Split(' ')[0]}" : string.Empty)}")"
+		Description="Your field service command center. Jump into your workspace or review key operational areas." />
 
-	<div class="token-card">
-		<strong>Design Token Baseline</strong>
-		<p class="token-caption">Spacing, typography, color, and elevation tokens are active in the shared portal shell styles for light and dark modes.</p>
-	</div>
+	<section class="home-quick-grid">
+		<button class="home-area-card home-area-card--cc" @onclick='() => Navigation.NavigateTo("/customer-care")'>
+			<div class="home-area-card__icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 .2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 7.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 15z"/>
+				</svg>
+			</div>
+			<div class="home-area-card__body">
+				<strong>Customer Care</strong>
+				<p>Live queue, triage, assignments, and SLA posture monitoring.</p>
+			</div>
+			<svg class="home-area-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+			</svg>
+		</button>
+
+		<button class="home-area-card home-area-card--mgmt" @onclick='() => Navigation.NavigateTo("/management")'>
+			<div class="home-area-card__icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+				</svg>
+			</div>
+			<div class="home-area-card__body">
+				<strong>Management</strong>
+				<p>KPI oversight, workforce, reports, lifecycle, and governance settings.</p>
+			</div>
+			<svg class="home-area-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+			</svg>
+		</button>
+	</section>
+
+	<section class="home-links-grid">
+		<button class="home-link-card" @onclick='() => Navigation.NavigateTo("/customer-care/requests")'>
+			<span class="home-link-card__label">Request Queue</span>
+			<span class="home-link-card__desc">Open triage queue with saved views</span>
+		</button>
+		<button class="home-link-card" @onclick='() => Navigation.NavigateTo("/customer-care/pipeline")'>
+			<span class="home-link-card__label">Pipeline</span>
+			<span class="home-link-card__desc">Monitor stage-by-stage progress</span>
+		</button>
+		<button class="home-link-card" @onclick='() => Navigation.NavigateTo("/customer-care/assignments")'>
+			<span class="home-link-card__label">Assignments</span>
+			<span class="home-link-card__desc">Coordinate worker routing</span>
+		</button>
+		<button class="home-link-card" @onclick='() => Navigation.NavigateTo("/management/workers")'>
+			<span class="home-link-card__label">Workforce</span>
+			<span class="home-link-card__desc">Manage worker profiles & availability</span>
+		</button>
+		<button class="home-link-card" @onclick='() => Navigation.NavigateTo("/management/reports")'>
+			<span class="home-link-card__label">Reports</span>
+			<span class="home-link-card__desc">Governance analytics & trends</span>
+		</button>
+		<button class="home-link-card" @onclick='() => Navigation.NavigateTo("/management/settings")'>
+			<span class="home-link-card__label">Settings</span>
+			<span class="home-link-card__desc">Guardrails & permission matrix</span>
+		</button>
+	</section>
 </section>
+
+<style>
+.home-quick-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: var(--space-4);
+}
+
+.home-area-card {
+	display: flex;
+	align-items: center;
+	gap: var(--space-4);
+	padding: var(--space-5);
+	border-radius: var(--radius-2xl);
+	border: 1px solid var(--color-border-default);
+	background: var(--color-bg-surface);
+	box-shadow: var(--elevation-1);
+	text-align: left;
+	cursor: pointer;
+	transition: box-shadow 160ms ease, transform 120ms ease, border-color 160ms ease;
+}
+.home-area-card:hover {
+	box-shadow: var(--elevation-2);
+	transform: translateY(-2px);
+}
+.home-area-card--cc:hover { border-color: #3b82f6; }
+.home-area-card--mgmt:hover { border-color: var(--color-link-default); }
+
+.home-area-card__icon {
+	width: 3rem;
+	height: 3rem;
+	border-radius: var(--radius-lg);
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+}
+.home-area-card__icon svg { width: 1.5rem; height: 1.5rem; }
+.home-area-card--cc .home-area-card__icon { background: #dbeafe; color: #1e40af; }
+.home-area-card--mgmt .home-area-card__icon { background: color-mix(in srgb, var(--color-link-default) 15%, white); color: var(--color-link-default); }
+
+.home-area-card__body { flex: 1; min-width: 0; }
+.home-area-card__body strong { display: block; font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text-primary); margin-bottom: 0.25rem; }
+.home-area-card__body p { margin: 0; font-size: var(--font-size-sm); color: var(--color-text-muted); line-height: 1.4; }
+
+.home-area-card__arrow { width: 1.25rem; height: 1.25rem; color: var(--color-text-muted); flex-shrink: 0; transition: transform 140ms ease, color 140ms ease; }
+.home-area-card:hover .home-area-card__arrow { transform: translateX(4px); color: var(--color-link-default); }
+
+.home-links-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: var(--space-3);
+}
+
+.home-link-card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--color-border-default);
+	background: var(--color-bg-surface);
+	box-shadow: var(--elevation-1);
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 140ms ease, box-shadow 140ms ease, transform 120ms ease;
+}
+.home-link-card:hover { border-color: var(--color-link-default); box-shadow: var(--elevation-2); transform: translateY(-1px); }
+.home-link-card__label { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
+.home-link-card__desc { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+</style>
+

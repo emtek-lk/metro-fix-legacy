@@ -11,6 +11,17 @@ DB_CONTEXT="GtekFsmDbContext"
 
 export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Development}"
 
+# Ensure global dotnet tools (dotnet-ef) are reachable in common setups.
+export PATH="$PATH:$HOME/.dotnet/tools"
+
+# Snap-based .NET installs commonly require DOTNET_ROOT for global tools.
+if [[ -z "${DOTNET_ROOT:-}" && -d "/var/snap/dotnet/common/dotnet" ]]; then
+  export DOTNET_ROOT="/var/snap/dotnet/common/dotnet"
+fi
+if [[ -z "${DOTNET_ROOT_X64:-}" && -n "${DOTNET_ROOT:-}" ]]; then
+  export DOTNET_ROOT_X64="$DOTNET_ROOT"
+fi
+
 # Load .env for Docker SQL Server credentials if present
 ENV_FILE="$ROOT_DIR/.env"
 if [[ -f "$ENV_FILE" ]]; then

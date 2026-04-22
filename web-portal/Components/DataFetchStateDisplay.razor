@@ -7,7 +7,7 @@
 	{
 		case FetchState.Loading:
 			<div class="fetch-state fetch-state-loading">
-				<div class="loading-spinner"></div>
+				<div class="loading-spinner" role="status" aria-label="Loading"></div>
 				<p>@(LoadingMessage ?? "Loading data...")</p>
 			</div>
 			break;
@@ -19,10 +19,12 @@
 		case FetchState.Stale:
 			<div class="fetch-state fetch-state-stale">
 				<div class="stale-badge">
-					<span class="stale-icon">⚠️</span>
-					<span>Cached (Stale)</span>
+					<svg class="fetch-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+					</svg>
+					<p class="fetch-state-heading">Showing cached data</p>
 				</div>
-				<p>@(StaleMessage ?? "Showing cached data from earlier. Data may be out of date.")</p>
+				<p>@(StaleMessage ?? "Data may be slightly out of date.")</p>
 				<div class="state-actions">
 					@if (OnRetry.HasDelegate)
 					{
@@ -41,10 +43,12 @@
 		case FetchState.Error:
 			<div class="fetch-state fetch-state-error">
 				<div class="error-badge">
-					<span class="error-icon">❌</span>
-					<span>Load Failed</span>
+					<svg class="fetch-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+					</svg>
+					<p class="fetch-state-heading">Something went wrong</p>
 				</div>
-				<p>@(ErrorMessage ?? "Unable to load data.")</p>
+				<p>@(ErrorMessage ?? "Unable to load data. Please try again.")</p>
 				<div class="state-actions">
 					@if (OnRetry.HasDelegate)
 					{
@@ -60,7 +64,7 @@
 
 		case FetchState.Retrying:
 			<div class="fetch-state fetch-state-retrying">
-				<div class="retry-spinner"></div>
+				<div class="retry-spinner" role="status" aria-label="Retrying"></div>
 				<p>@(RetryingMessage ?? $"Retrying... Attempt {RetryAttempt ?? 1}")</p>
 			</div>
 			break;
@@ -68,10 +72,12 @@
 		case FetchState.PartialSuccess:
 			<div class="fetch-state fetch-state-partial">
 				<div class="partial-badge">
-					<span class="partial-icon">⚡</span>
-					<span>Partial Data</span>
+					<svg class="fetch-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+					</svg>
+					<p class="fetch-state-heading">Partial data loaded</p>
 				</div>
-				<p>@(PartialMessage ?? "Some data loaded; other items failed. Showing available items.")</p>
+				<p>@(PartialMessage ?? "Some data loaded; other items may be unavailable.")</p>
 				<div class="state-actions">
 					@if (OnRetry.HasDelegate)
 					{
@@ -90,6 +96,7 @@
 			break;
 	}
 </div>
+
 
 @code {
 	[Parameter]

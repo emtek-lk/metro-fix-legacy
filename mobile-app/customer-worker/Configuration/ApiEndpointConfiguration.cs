@@ -20,11 +20,26 @@ public sealed class ApiEndpointConfiguration
         var port = string.IsNullOrWhiteSpace(configuredPort) ? "5000" : configuredPort;
 
     // Emulator should use 10.0.2.2; physical Android devices use the host LAN IP.
-    var localHost = "192.168.8.197";
-        if (DeviceInfo.Platform == DevicePlatform.Android && DeviceInfo.DeviceType == DeviceType.Virtual)
-        {
-            localHost = "10.0.2.2";
-        }
+    string localHost;
+
+if (DeviceInfo.Platform == DevicePlatform.Android)
+{
+    if (DeviceInfo.DeviceType == DeviceType.Virtual)
+    {
+        // Android Emulator
+        localHost = "10.0.2.2";
+    }
+    else
+    {
+        // Physical device via USB (adb reverse)
+        localHost = "127.0.0.1";
+    }
+}
+else
+{
+    // Desktop or other platforms
+    localHost = "localhost";
+}
 
         ApiBaseUrl = $"http://{localHost}:{port}";
 #else

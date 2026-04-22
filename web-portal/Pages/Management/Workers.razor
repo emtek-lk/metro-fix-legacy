@@ -7,63 +7,75 @@
 <PageTitle>Management Workers</PageTitle>
 
 <section class="portal-page-shell">
-<PortalSectionHeader
-	Title="Management Workers"
+	<PortalSectionHeader
+	Title="Workforce"
 	Description="Worker profile management, availability controls, and skills governance.">
-	<Actions>
-		<div class="workers-actions portal-inline-actions">
-			<input class="workers-search" @bind="SearchText" placeholder="Search by code or name" />
-			<label class="workers-checkbox">
-				<input type="checkbox" @bind="IncludeInactive" /> Include inactive
-			</label>
-			<button @onclick="ReloadAsync" disabled="@IsLoading">Refresh</button>
-		</div>
-	</Actions>
-</PortalSectionHeader>
+		<Actions>
+			<div class="portal-inline-actions">
+				<input class="ops-filter-input" style="min-width:220px" @bind="SearchText" placeholder="Search by name or code…" aria-label="Search workers" />
+				<label class="toggle-switch" style="font-size:var(--font-size-sm);gap:var(--space-2)">
+					<input type="checkbox" @bind="IncludeInactive" /> Include inactive
+				</label>
+				<button class="btn btn-secondary btn-sm" @onclick="ReloadAsync" disabled="@IsLoading">Refresh Data</button>
+			</div>
+		</Actions>
+	</PortalSectionHeader>
 
 @if (!string.IsNullOrWhiteSpace(Notice))
 {
-	<p class="workers-notice">@Notice</p>
+	<div class="notice-banner notice-banner-success" role="alert">
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+		@Notice
+	</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(ErrorMessage))
 {
-	<p class="workers-error">@ErrorMessage</p>
+	<div class="notice-banner notice-banner-error" role="alert">
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+		@ErrorMessage
+	</div>
 }
 
 <section class="workers-layout portal-grid-2">
-	<article class="workers-panel portal-panel">
-		<h2>@(EditTarget is null ? "Create Worker" : "Edit Worker")</h2>
-		<div class="workers-form">
-			<label>Code</label>
-			<input @bind="Form.WorkerCode" />
-
-			<label>Display Name</label>
-			<input @bind="Form.DisplayName" />
-
-			<label>Internal Rating (1.0 - 5.0)</label>
-			<input type="number" min="1" max="5" step="0.1" @bind="Form.InternalRating" />
-
-			<label>Availability</label>
-			<select @bind="Form.AvailabilityStatus">
-				@foreach (var value in AvailabilityOptions)
-				{
-					<option value="@value">@value</option>
-				}
-			</select>
-
-			<label>Skills (comma-separated)</label>
-			<input @bind="Form.SkillsCsv" />
-
-			<label class="workers-checkbox">
+	<article class="workers-panel portal-panel" style="align-self:start">
+		<h2>@(EditTarget is null ? "Add Worker" : "Edit Worker")</h2>
+		<div class="portal-form-grid">
+			<div class="form-field">
+				<label for="wf-code">Worker Code</label>
+				<input id="wf-code" @bind="Form.WorkerCode" placeholder="e.g. WRK-001" />
+			</div>
+			<div class="form-field">
+				<label for="wf-name">Display Name</label>
+				<input id="wf-name" @bind="Form.DisplayName" placeholder="Full name" />
+			</div>
+			<div class="form-field">
+				<label for="wf-rating">Performance Rating</label>
+				<input id="wf-rating" type="number" min="1" max="5" step="0.1" @bind="Form.InternalRating" />
+				<p class="field-hint">Rate from 1.0 (needs improvement) to 5.0 (excellent)</p>
+			</div>
+			<div class="form-field">
+				<label for="wf-avail">Availability</label>
+				<select id="wf-avail" @bind="Form.AvailabilityStatus">
+					@foreach (var value in AvailabilityOptions)
+					{
+						<option value="@value">@value</option>
+					}
+				</select>
+			</div>
+			<div class="form-field">
+				<label for="wf-skills">Skills</label>
+				<input id="wf-skills" @bind="Form.SkillsCsv" placeholder="e.g. Plumbing, Electrical, HVAC" />
+				<p class="field-hint">Separate multiple skills with commas</p>
+			</div>
+			<label class="toggle-switch">
 				<input type="checkbox" @bind="Form.IsActive" /> Active profile
 			</label>
-
-			<div class="workers-form-actions">
-				<button @onclick="SaveAsync" disabled="@IsSaving">@(EditTarget is null ? "Create" : "Update")</button>
+			<div class="portal-inline-actions" style="margin-top:var(--space-2)">
+				<button class="btn btn-primary" @onclick="SaveAsync" disabled="@IsSaving">@(EditTarget is null ? "Add Worker" : "Save Changes")</button>
 				@if (EditTarget is not null)
 				{
-					<button @onclick="CancelEdit">Cancel</button>
+					<button class="btn btn-ghost" @onclick="CancelEdit">Cancel</button>
 				}
 			</div>
 		</div>
@@ -73,15 +85,21 @@
 		<h2>Worker Profiles</h2>
 		@if (IsLoading)
 		{
-			<p>Loading workers...</p>
+			<div class="skeleton skeleton-row"></div>
+			<div class="skeleton skeleton-row"></div>
+			<div class="skeleton skeleton-row"></div>
 		}
 		else if (WorkerItems.Count == 0)
 		{
-			<p>No workers found for current filters.</p>
+			<div class="empty-state">
+				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+				<p><strong>No workers found</strong>No workers match the current filters. Try adjusting your search or include inactive profiles.</p>
+			</div>
 		}
 		else
 		{
-			<table class="workers-table">
+			<div class="audit-table-wrap">
+			<table class="portal-table">
 				<thead>
 					<tr>
 						<th>Code</th>
@@ -89,96 +107,43 @@
 						<th>Rating</th>
 						<th>Availability</th>
 						<th>Skills</th>
-						<th>Active</th>
-						<th></th>
+						<th>Status</th>
+						<th>Actions</th>
 					</tr>
 				</thead>
 				<tbody>
 					@foreach (var worker in WorkerItems)
 					{
 						<tr>
-							<td>@worker.WorkerCode</td>
+							<td><span class="mono">@worker.WorkerCode</span></td>
 							<td>@worker.DisplayName</td>
 							<td>@worker.InternalRating.ToString("0.0")</td>
 							<td>@worker.AvailabilityStatus</td>
-							<td>@string.Join(", ", worker.Skills)</td>
-							<td>@(worker.IsActive ? "Yes" : "No")</td>
+							<td style="max-width:180px;white-space:normal">@string.Join(", ", worker.Skills)</td>
 							<td>
-								<button @onclick="() => BeginEdit(worker)">Edit</button>
+								@if (worker.IsActive)
+								{
+									<span class="badge badge-success">Active</span>
+								}
+								else
+								{
+									<span class="badge badge-neutral">Inactive</span>
+								}
+							</td>
+							<td>
+								<button class="btn btn-secondary btn-sm" @onclick="() => BeginEdit(worker)">Edit</button>
 							</td>
 						</tr>
 					}
 				</tbody>
 			</table>
+			</div>
 		}
 	</article>
 </section>
 </section>
 
-<style>
-	.workers-layout {
-		align-items: start;
-	}
 
-	.workers-panel {
-		padding: var(--space-4);
-	}
-
-	.workers-actions {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-		margin-bottom: 1rem;
-		flex-wrap: wrap;
-	}
-
-	.workers-search {
-		min-width: 250px;
-	}
-
-	.workers-form {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.workers-form-actions {
-		margin-top: 0.5rem;
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.workers-checkbox {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-
-	.workers-table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	.workers-table th,
-	.workers-table td {
-		border-bottom: 1px solid #e6ebf2;
-		text-align: left;
-		padding: 0.5rem;
-		vertical-align: top;
-	}
-
-	.workers-error {
-		color: var(--color-text-primary);
-	}
-
-	.workers-notice {
-		color: var(--color-link-default);
-	}
-
-	.workers-table th,
-	.workers-table td {
-		border-bottom: 1px solid var(--color-border-default);
-	}
-</style>
 
 @code {
 	private static readonly string[] AvailabilityOptions = ["Available", "Busy", "OnBreak", "Unavailable", "Offline"];

@@ -36,7 +36,15 @@
 							<p class="mgmt-kpi-title">@kpi.Title</p>
 							<p class="mgmt-kpi-value">@kpi.Value</p>
 							<p class="mgmt-kpi-delta @(kpi.Delta >= 0 ? "positive" : "negative")">
-								@(kpi.Delta >= 0 ? "+" : string.Empty)@kpi.Delta.ToString("0.0")% vs previous window
+								@if (kpi.Delta >= 0)
+								{
+									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+								}
+								else
+								{
+									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+								}
+								@(Math.Abs(kpi.Delta).ToString("0.0"))% vs previous
 							</p>
 						</article>
 					}
@@ -65,8 +73,13 @@
 					@foreach (var entry in Overview.DrillIns)
 					{
 						<button class="mgmt-drill-card" @onclick="() => OpenDrillIn(entry.Route)" @key="entry.Title">
-							<span class="mgmt-drill-title">@entry.Title</span>
-							<span class="mgmt-drill-caption">@entry.Caption</span>
+							<div>
+								<span class="mgmt-drill-title">@entry.Title</span>
+								<span class="mgmt-drill-caption">@entry.Caption</span>
+							</div>
+							<svg class="mgmt-drill-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+							</svg>
 						</button>
 					}
 				</section>

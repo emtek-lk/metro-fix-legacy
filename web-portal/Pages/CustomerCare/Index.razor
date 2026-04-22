@@ -42,7 +42,15 @@
 								<p class="mgmt-kpi-title">@card.Title</p>
 								<p class="mgmt-kpi-value">@card.Value</p>
 								<p class="mgmt-kpi-delta @(card.Delta >= 0 ? "positive" : "negative")">
-									@(card.Delta >= 0 ? "+" : string.Empty)@card.Delta.ToString("0.0")% vs previous snapshot
+									@if (card.Delta >= 0)
+									{
+										<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+									}
+									else
+									{
+										<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+									}
+									@(Math.Abs(card.Delta).ToString("0.0"))% vs previous
 								</p>
 							</article>
 						}
@@ -62,7 +70,7 @@
 											<p class="oversight-title">@stage.Label</p>
 											<p class="audit-muted">@stage.Description</p>
 										</div>
-										<span class="audit-pill low">@stage.Value</span>
+										<span class="badge badge-neutral">@stage.Value</span>
 									</div>
 								}
 							</div>
