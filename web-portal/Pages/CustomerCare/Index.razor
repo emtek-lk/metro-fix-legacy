@@ -34,60 +34,135 @@
 			OnDismiss="@HandleDismiss">
 			@if (Overview is not null)
 			{
-				<section class="customer-care-overview-shell">
-					<section class="mgmt-kpi-grid">
-						@foreach (var card in Overview.Kpis)
-						{
-							<article class="mgmt-kpi-card" @key="card.Title">
-								<p class="mgmt-kpi-title">@card.Title</p>
-								<p class="mgmt-kpi-value">@card.Value</p>
-								<p class="mgmt-kpi-delta @(card.Delta >= 0 ? "positive" : "negative")">
-									@if (card.Delta >= 0)
-									{
-										<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-									}
-									else
-									{
-										<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-									}
-									@(Math.Abs(card.Delta).ToString("0.0"))% vs previous
-								</p>
-							</article>
-						}
-					</section>
+				<section class="cc-overview">
+					<!-- KPI Strip -->
+					<div class="cc-kpi-strip">
+						<article class="cc-kpi-card cc-kpi-card--queue">
+							<div class="cc-kpi-icon">
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+							</div>
+							<div class="cc-kpi-body">
+								<span class="cc-kpi-label">@Overview.Kpis[0].Title</span>
+								<span class="cc-kpi-value">@Overview.Kpis[0].Value</span>
+							</div>
+							<p class="cc-kpi-delta @(Overview.Kpis[0].Delta >= 0 ? "cc-kpi-delta--up" : "cc-kpi-delta--down")">
+								@if (Overview.Kpis[0].Delta >= 0)
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+								}
+								else
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+								}
+								@(Math.Abs(Overview.Kpis[0].Delta).ToString("0.0"))% vs prior
+							</p>
+						</article>
 
-					<section class="portal-grid-2 customer-care-overview-grid">
-						<article class="audit-panel">
-							<header class="audit-panel-header">
-								<h2>Pipeline Snapshot</h2>
-								<span class="audit-muted">Current demand distribution by stage</span>
+						<article class="cc-kpi-card cc-kpi-card--risk">
+							<div class="cc-kpi-icon">
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+							</div>
+							<div class="cc-kpi-body">
+								<span class="cc-kpi-label">@Overview.Kpis[1].Title</span>
+								<span class="cc-kpi-value">@Overview.Kpis[1].Value</span>
+							</div>
+							<p class="cc-kpi-delta @(Overview.Kpis[1].Delta >= 0 ? "cc-kpi-delta--up" : "cc-kpi-delta--down")">
+								@if (Overview.Kpis[1].Delta >= 0)
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+								}
+								else
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+								}
+								@(Math.Abs(Overview.Kpis[1].Delta).ToString("0.0"))% vs prior
+							</p>
+						</article>
+
+						<article class="cc-kpi-card cc-kpi-card--escalated">
+							<div class="cc-kpi-icon">
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+							</div>
+							<div class="cc-kpi-body">
+								<span class="cc-kpi-label">@Overview.Kpis[2].Title</span>
+								<span class="cc-kpi-value">@Overview.Kpis[2].Value</span>
+							</div>
+							<p class="cc-kpi-delta @(Overview.Kpis[2].Delta >= 0 ? "cc-kpi-delta--up" : "cc-kpi-delta--down")">
+								@if (Overview.Kpis[2].Delta >= 0)
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+								}
+								else
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+								}
+								@(Math.Abs(Overview.Kpis[2].Delta).ToString("0.0"))% vs prior
+							</p>
+						</article>
+
+						<article class="cc-kpi-card cc-kpi-card--unassigned">
+							<div class="cc-kpi-icon">
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+							</div>
+							<div class="cc-kpi-body">
+								<span class="cc-kpi-label">@Overview.Kpis[3].Title</span>
+								<span class="cc-kpi-value">@Overview.Kpis[3].Value</span>
+							</div>
+							<p class="cc-kpi-delta @(Overview.Kpis[3].Delta >= 0 ? "cc-kpi-delta--up" : "cc-kpi-delta--down")">
+								@if (Overview.Kpis[3].Delta >= 0)
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+								}
+								else
+								{
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+								}
+								@(Math.Abs(Overview.Kpis[3].Delta).ToString("0.0"))% vs prior
+							</p>
+						</article>
+					</div>
+
+					<!-- Main grid -->
+					<div class="cc-main-grid">
+						<!-- Pipeline Snapshot -->
+						<article class="cc-panel">
+							<header class="cc-panel-header">
+								<div class="cc-panel-title-group">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="8" rx="1"/></svg>
+									<h2>Pipeline Snapshot</h2>
+								</div>
+								<span class="cc-panel-meta">Demand by stage</span>
 							</header>
-							<div class="customer-care-metric-list">
+							<div class="cc-metric-list">
 								@foreach (var stage in Overview.PipelineStages)
 								{
-									<div class="oversight-item" @key="stage.Label">
-										<div>
-											<p class="oversight-title">@stage.Label</p>
-											<p class="audit-muted">@stage.Description</p>
+									<div class="cc-metric-row" @key="stage.Label">
+										<div class="cc-metric-info">
+											<span class="cc-metric-label">@stage.Label</span>
+											<span class="cc-metric-desc">@stage.Description</span>
 										</div>
-										<span class="badge badge-neutral">@stage.Value</span>
+										<span class="audit-pill @stage.PillClass">@stage.Value</span>
 									</div>
 								}
 							</div>
 						</article>
 
-						<article class="audit-panel">
-							<header class="audit-panel-header">
-								<h2>SLA Risk Summary</h2>
-								<span class="audit-muted">At-risk and breach posture for triage focus</span>
+						<!-- SLA Risk -->
+						<article class="cc-panel cc-panel--alert">
+							<header class="cc-panel-header">
+								<div class="cc-panel-title-group">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+									<h2>SLA Risk</h2>
+								</div>
+								<span class="cc-panel-meta">Breach posture</span>
 							</header>
-							<div class="customer-care-metric-list">
+							<div class="cc-metric-list">
 								@foreach (var item in Overview.SlaItems)
 								{
-									<div class="oversight-item" @key="item.Label">
-										<div>
-											<p class="oversight-title">@item.Label</p>
-											<p class="audit-muted">@item.Description</p>
+									<div class="cc-metric-row" @key="item.Label">
+										<div class="cc-metric-info">
+											<span class="cc-metric-label">@item.Label</span>
+											<span class="cc-metric-desc">@item.Description</span>
 										</div>
 										<span class="audit-pill @item.PillClass">@item.Value</span>
 									</div>
@@ -95,18 +170,22 @@
 							</div>
 						</article>
 
-						<article class="audit-panel">
-							<header class="audit-panel-header">
-								<h2>Assignment Load</h2>
-								<span class="audit-muted">Dispatch workload and worker coordination cues</span>
+						<!-- Assignment Load -->
+						<article class="cc-panel">
+							<header class="cc-panel-header">
+								<div class="cc-panel-title-group">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+									<h2>Assignment Load</h2>
+								</div>
+								<span class="cc-panel-meta">Dispatch workload</span>
 							</header>
-							<div class="customer-care-metric-list">
+							<div class="cc-metric-list">
 								@foreach (var item in Overview.AssignmentItems)
 								{
-									<div class="oversight-item" @key="item.Label">
-										<div>
-											<p class="oversight-title">@item.Label</p>
-											<p class="audit-muted">@item.Description</p>
+									<div class="cc-metric-row" @key="item.Label">
+										<div class="cc-metric-info">
+											<span class="cc-metric-label">@item.Label</span>
+											<span class="cc-metric-desc">@item.Description</span>
 										</div>
 										<span class="audit-pill @item.PillClass">@item.Value</span>
 									</div>
@@ -114,22 +193,26 @@
 							</div>
 						</article>
 
-						<article class="audit-panel">
-							<header class="audit-panel-header">
-								<h2>Quick Links</h2>
-								<span class="audit-muted">Jump straight into active customer care workflows</span>
+						<!-- Quick Links -->
+						<article class="cc-panel">
+							<header class="cc-panel-header">
+								<div class="cc-panel-title-group">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+									<h2>Quick Actions</h2>
+								</div>
 							</header>
-							<div class="customer-care-link-grid">
+							<div class="cc-quicklink-grid">
 								@foreach (var link in Overview.QuickLinks)
 								{
-									<button class="mgmt-drill-card customer-care-link-card" @onclick="() => OpenLink(link.Route)" @key="link.Title">
-										<span class="mgmt-drill-title">@link.Title</span>
-										<span class="mgmt-drill-caption">@link.Caption</span>
+									<button class="cc-quicklink" @onclick="() => OpenLink(link.Route)" @key="link.Title">
+										<span class="cc-quicklink-title">@link.Title</span>
+										<span class="cc-quicklink-caption">@link.Caption</span>
+										<svg class="cc-quicklink-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
 									</button>
 								}
 							</div>
 						</article>
-					</section>
+					</div>
 				</section>
 			}
 		</DataFetchStateDisplay>
@@ -137,30 +220,113 @@
 </section>
 
 <style>
-	.customer-care-overview-shell {
-		display: grid;
-		gap: var(--space-4);
-	}
+    .cc-overview { display: flex; flex-direction: column; gap: var(--space-5); }
 
-	.customer-care-overview-grid {
-		align-items: start;
-	}
+    /* KPI Strip */
+    .cc-kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-4);
+    }
+    .cc-kpi-card {
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-5);
+        display: grid;
+        gap: var(--space-2);
+        box-shadow: var(--elevation-1);
+        position: relative;
+        overflow: hidden;
+        border-top: 3px solid var(--color-border-default);
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .cc-kpi-card:hover { box-shadow: var(--elevation-2); transform: translateY(-1px); }
+    .cc-kpi-card--queue { border-top-color: var(--color-info); }
+    .cc-kpi-card--risk  { border-top-color: var(--color-warning); }
+    .cc-kpi-card--escalated { border-top-color: var(--color-danger); }
+    .cc-kpi-card--unassigned { border-top-color: var(--color-accent); }
+    .cc-kpi-icon {
+        width: 36px; height: 36px;
+        border-radius: var(--radius-md);
+        display: flex; align-items: center; justify-content: center;
+        background: var(--color-bg-surface-alt);
+        color: var(--color-text-muted);
+    }
+    .cc-kpi-card--queue .cc-kpi-icon { background: var(--color-info-bg); color: var(--color-info); }
+    .cc-kpi-card--risk .cc-kpi-icon { background: var(--color-warning-bg); color: var(--color-warning); }
+    .cc-kpi-card--escalated .cc-kpi-icon { background: var(--color-danger-bg); color: var(--color-danger); }
+    .cc-kpi-card--unassigned .cc-kpi-icon { background: var(--color-accent-subtle); color: var(--color-accent); }
+    .cc-kpi-body { display: flex; flex-direction: column; gap: 0.15rem; }
+    .cc-kpi-label { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .cc-kpi-value { font-size: 2.25rem; font-weight: 800; color: var(--color-text-primary); line-height: 1; }
+    .cc-kpi-delta {
+        display: inline-flex; align-items: center; gap: 0.2rem;
+        font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);
+    }
+    .cc-kpi-delta--up { color: var(--color-success); }
+    .cc-kpi-delta--down { color: var(--color-danger); }
 
-	.customer-care-metric-list {
-		display: grid;
-		gap: var(--space-2);
-	}
+    /* Main grid */
+    .cc-main-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-4);
+    }
+    .cc-panel {
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-5);
+        box-shadow: var(--elevation-1);
+        display: flex; flex-direction: column; gap: var(--space-3);
+    }
+    .cc-panel--alert { border-left: 3px solid var(--color-danger); }
+    .cc-panel-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .cc-panel-title-group {
+        display: flex; align-items: center; gap: var(--space-2);
+        color: var(--color-text-primary);
+    }
+    .cc-panel-title-group h2 { margin: 0; font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
+    .cc-panel-meta { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    .cc-metric-list { display: flex; flex-direction: column; gap: 0; }
+    .cc-metric-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: var(--space-3) 0;
+        border-bottom: 1px solid var(--color-border-subtle);
+        gap: var(--space-3);
+    }
+    .cc-metric-row:last-child { border-bottom: none; }
+    .cc-metric-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+    .cc-metric-label { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text-primary); }
+    .cc-metric-desc { font-size: var(--font-size-xs); color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-	.customer-care-link-grid {
-		display: grid;
-		gap: var(--space-2);
-		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-	}
+    /* Quick links */
+    .cc-quicklink-grid { display: grid; gap: var(--space-2); }
+    .cc-quicklink {
+        display: flex; align-items: center; gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        background: var(--color-bg-surface-alt);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        cursor: pointer; text-align: left; width: 100%;
+        transition: all 0.15s ease;
+        position: relative;
+    }
+    .cc-quicklink:hover { background: var(--color-bg-inset); border-color: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
+    .cc-quicklink-title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); flex: 1; }
+    .cc-quicklink-caption { font-size: var(--font-size-xs); color: var(--color-text-muted); flex: 2; }
+    .cc-quicklink-arrow { color: var(--color-text-muted); flex-shrink: 0; transition: transform 0.15s ease; }
+    .cc-quicklink:hover .cc-quicklink-arrow { transform: translateX(3px); color: var(--color-accent); }
 
-	.customer-care-link-card {
-		text-align: left;
-		width: 100%;
-	}
+    @@media (max-width: 900px) {
+        .cc-kpi-strip { grid-template-columns: repeat(2, 1fr); }
+        .cc-main-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
 @code {

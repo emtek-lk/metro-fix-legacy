@@ -1,16 +1,19 @@
 <section class="ops-board">
     <div class="ops-board__header">
-        <div>
+        <div class="ops-board__title-group">
             <h2 class="ops-board__title">@Title</h2>
             <p class="ops-board__subtitle">@Subtitle</p>
         </div>
-
         <div class="ops-board__controls">
-            <input class="ops-filter-input"
-                   placeholder="Filter cards"
-                   @bind="searchText"
-                   @bind:event="oninput" />
-            <select class="ops-filter-select" @bind="priorityFilter">
+            <div class="ops-filter-group">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="ops-filter-input"
+                       placeholder="Search cards…"
+                       @bind="searchText"
+                       @bind:event="oninput"
+                       aria-label="Filter board cards" />
+            </div>
+            <select class="ops-filter-select" @bind="priorityFilter" aria-label="Filter by priority">
                 @foreach (var option in PriorityOptions)
                 {
                     <option value="@option">@option</option>
@@ -22,23 +25,35 @@
     <div class="ops-board__lane-wrap">
         @foreach (var lane in FilteredColumns)
         {
-            <section class="ops-lane">
+            <section class="ops-lane" @key="lane.Name">
                 <header class="ops-lane__header">
-                    <span>@lane.Name</span>
-                    <span class="ops-count">@lane.Cards.Count</span>
+                    <span class="ops-lane__name">@lane.Name</span>
+                    <span class="ops-lane__count">@lane.Cards.Count</span>
                 </header>
 
                 <div class="ops-lane__cards">
+                    @if (lane.Cards.Count == 0)
+                    {
+                        <div class="ops-lane__empty">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <span>No cards</span>
+                        </div>
+                    }
                     @foreach (var card in lane.Cards)
                     {
-                        <article class="ops-card">
-                            <p class="ops-card__ref mono">@card.Reference</p>
-                            <h3>@card.Title</h3>
-                            <div class="ops-card__meta">
+                        <article class="ops-card ops-card--@card.Priority.ToLowerInvariant()" @key="card.RequestId">
+                            <div class="ops-card__top">
+                                <span class="ops-card__ref mono">@card.Reference</span>
                                 <span class="priority-chip priority-@card.Priority.ToLowerInvariant()">@card.Priority</span>
-                                <span>@card.Assignee</span>
                             </div>
-                            <p class="ops-card__updated">Updated @card.UpdatedAtUtc.ToLocalTime().ToString("MM-dd HH:mm")</p>
+                            <h3 class="ops-card__title">@card.Title</h3>
+                            <div class="ops-card__footer">
+                                <div class="ops-card__assignee">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    <span>@card.Assignee</span>
+                                </div>
+                                <span class="ops-card__time">@FormatAge(card.UpdatedAtUtc)</span>
+                            </div>
                         </article>
                     }
                 </div>
@@ -76,4 +91,11 @@
                     .OrderByDescending(card => card.UpdatedAtUtc)
                     .ToList()))
             .ToList();
+
+    private static string FormatAge(DateTime updatedAt)
+    {
+        var diff = DateTime.UtcNow - updatedAt;
+        if (diff.TotalHours >= 1) return $"{(int)diff.TotalHours}h ago";
+        return $"{(int)diff.TotalMinutes}m ago";
+    }
 }

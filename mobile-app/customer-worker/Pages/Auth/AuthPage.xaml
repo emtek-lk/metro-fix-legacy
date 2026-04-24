@@ -37,21 +37,33 @@
             <Label x:Name="ErrorLabel"
                    IsVisible="False"
                    FontSize="13"
-                     TextColor="{AppThemeBinding Light={StaticResource ColorAccentLight}, Dark={StaticResource ColorAccentDark}}" />
+                   TextColor="{AppThemeBinding Light={StaticResource ColorStatusErrorLight}, Dark={StaticResource ColorStatusErrorDark}}" />
 
             <VerticalStackLayout x:Name="RegisterFieldsLayout" IsVisible="False" Spacing="12">
-                <Label Text="Display Name" />
+                <Label Text="Display Name"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
                 <Entry x:Name="DisplayNameEntry" Placeholder="Customer Name" />
 
-                <Label Text="Tenant Code" />
+                <Label Text="Tenant Code"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
                 <Entry x:Name="TenantCodeEntry" Placeholder="REF-BASELINE" Text="REF-BASELINE" />
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="12">
-                <Label Text="Email" />
+                <Label Text="Email"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
                 <Entry x:Name="EmailEntry" Keyboard="Email" Placeholder="name@example.com" />
 
-                <Label Text="Password" />
+                <Label Text="Password"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
                 <Entry x:Name="PasswordEntry" IsPassword="True" Placeholder="Password" />
             </VerticalStackLayout>
 

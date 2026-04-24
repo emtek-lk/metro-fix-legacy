@@ -37,20 +37,20 @@
     <Color x:Key="ColorAccentBgLight">#FFF3E3</Color>
 
     <!-- Semantic Colors - Dark Variants -->
-    <Color x:Key="ColorBgPageDark">#2B435F</Color>
-    <Color x:Key="ColorBgSurfaceDark">#35506C</Color>
-    <Color x:Key="ColorBgSurfaceElevatedDark">#40607F</Color>
-    <Color x:Key="ColorTextPrimaryDark">#FFFFFF</Color>
-    <Color x:Key="ColorTextSecondaryDark">#EAF0F6</Color>
-    <Color x:Key="ColorTextMutedDark">#D3DCE5</Color>
-    <Color x:Key="ColorTextDisabledDark">#6B7280</Color>
-    <Color x:Key="ColorBorderDefaultDark">#4A6077</Color>
-    <Color x:Key="ColorBorderSubtleDark">#35506C</Color>
-    <Color x:Key="ColorBorderStrongDark">#5D7590</Color>
-    <Color x:Key="ColorAccentDark">#F6A74A</Color>
-    <Color x:Key="ColorAccentHoverDark">#F8B862</Color>
-    <Color x:Key="ColorAccentActiveDark">#D98A2B</Color>
-    <Color x:Key="ColorAccentBgDark">#5C4A34</Color>
+    <Color x:Key="ColorBgPageDark">#0D1420</Color>
+    <Color x:Key="ColorBgSurfaceDark">#131E2E</Color>
+    <Color x:Key="ColorBgSurfaceElevatedDark">#1A2A3F</Color>
+    <Color x:Key="ColorTextPrimaryDark">#EDF2F9</Color>
+    <Color x:Key="ColorTextSecondaryDark">#C4D2E6</Color>
+    <Color x:Key="ColorTextMutedDark">#8AA3BF</Color>
+    <Color x:Key="ColorTextDisabledDark">#4D6880</Color>
+    <Color x:Key="ColorBorderDefaultDark">#243448</Color>
+    <Color x:Key="ColorBorderSubtleDark">#1A2640</Color>
+    <Color x:Key="ColorBorderStrongDark">#3A5070</Color>
+    <Color x:Key="ColorAccentDark">#F1A44A</Color>
+    <Color x:Key="ColorAccentHoverDark">#E18B2C</Color>
+    <Color x:Key="ColorAccentActiveDark">#CC7014</Color>
+    <Color x:Key="ColorAccentBgDark">#1E1A12</Color>
 
     <!-- Status Colors - Light Variants -->
     <Color x:Key="ColorStatusSuccessLight">#10B981</Color>

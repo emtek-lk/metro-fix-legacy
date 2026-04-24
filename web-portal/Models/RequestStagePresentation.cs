@@ -33,22 +33,18 @@ public static class RequestStagePresentation
         };
     }
 
-    public static string GetIcon(RequestStage stage, bool isEscalated = false)
+    public static string GetStatusIconClass(RequestStage stage, bool isEscalated = false)
     {
-        if (isEscalated)
-        {
-            return "⚠️";
-        }
-
+        if (isEscalated) return "icon-escalated";
         return stage switch
         {
-            RequestStage.New => "📋",
-            RequestStage.Assigned => "👤",
-            RequestStage.InProgress => "🔧",
-            RequestStage.OnHold => "⏳",
-            RequestStage.Completed => "✅",
-            RequestStage.Cancelled => "❌",
-            _ => "?",
+            RequestStage.New => "icon-new",
+            RequestStage.Assigned => "icon-assigned",
+            RequestStage.InProgress => "icon-in-progress",
+            RequestStage.OnHold => "icon-on-hold",
+            RequestStage.Completed => "icon-completed",
+            RequestStage.Cancelled => "icon-cancelled",
+            _ => "icon-unknown",
         };
     }
 

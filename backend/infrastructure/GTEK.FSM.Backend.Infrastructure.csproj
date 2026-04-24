@@ -1,4 +1,32 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    LINUX / SDK 10 COMPATIBILITY NOTE
+    ==================================
+    Microsoft.EntityFrameworkCore.Design v10 ships broken MSBuild targets that are
+    loaded even when 'build'/'buildtransitive' are excluded from IncludeAssets,
+    because they are pulled in transitively through the SDK itself on .NET 10.
+
+    These targets inject two item globs that fail on Linux with no matching files:
+      • EmbeddedResource Include="**/*.resx"  → MSB3552 (no .resx files present)
+      • Compile Include="**/*.cs"             → CS2021 (glob does not expand)
+
+    The only reliable fix on SDK 10.0.x / Linux is to:
+      1. Keep EnableDefaultItems=true (the SDK glob expands correctly for Compile).
+      2. After EF targets inject their items, explicitly Remove them.
+      3. Pass /p:EnableDefaultEmbeddedResourceItems=false at publish time to kill
+         the resx glob before ResGen runs.
+
+    This is a known upstream regression in EF Core Design 10.0.x on Linux.
+    See: https://github.com/dotnet/efcore/issues
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);SA0001;SA1101;SA1118;SA1200;SA1204;SA1208;SA1210;SA1402;SA1408;SA1413;SA1507;SA1518;SA1649</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
@@ -10,21 +38,27 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <ProjectReference Include="..\application\GTEK.FSM.Backend.Application.csproj" />
-    <ProjectReference Include="..\domain\GTEK.FSM.Backend.Domain.csproj" />
-    <ProjectReference Include="..\..\shared\contracts\GTEK.FSM.Shared.Contracts.csproj" />
+
+    <!-- Forward-slash paths for Linux/Docker compatibility -->
+    <ProjectReference Include="../application/GTEK.FSM.Backend.Application.csproj" />
+    <ProjectReference Include="../domain/GTEK.FSM.Backend.Domain.csproj" />
+    <ProjectReference Include="../../shared/contracts/GTEK.FSM.Shared.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+  <!--
+    Remove any EmbeddedResource items whose Identity is a raw glob pattern
+    (i.e. was never expanded — a symptom of EF Design target injection on Linux).
+    This fires late in evaluation, after all package targets have run.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Remove="**/*.resx" />
+    <EmbeddedResource Remove="**\*.resx" />
+  </ItemGroup>
 
 </Project>

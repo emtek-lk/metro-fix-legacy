@@ -29,25 +29,45 @@
 		AllowStaleRender="true"
 		OnRetry="@HandleRetry"
 		OnDismiss="@HandleDismiss">
-			<section class="saved-views-panel portal-panel">
-				<h2>Saved Views</h2>
-				<div class="saved-views-create portal-inline-actions">
-					<input placeholder="View name" @bind="NewSavedViewName" />
-					<button @onclick="SaveCurrentView" disabled="@(string.IsNullOrWhiteSpace(NewSavedViewName) || ActiveFilter.IsDefault)">Save Current Filters</button>
+			<section class="svp">
+				<div class="svp-header">
+					<div class="svp-title-group">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+						<h2 class="svp-title">Saved Views</h2>
+						@if (SavedViews.Count > 0)
+						{
+							<span class="svp-count">@SavedViews.Count</span>
+						}
+					</div>
+					<div class="svp-create">
+						<input class="svp-input" placeholder="New view name…" @bind="NewSavedViewName" aria-label="Saved view name" />
+						<button class="btn btn-sm btn-secondary" @onclick="SaveCurrentView" disabled="@(string.IsNullOrWhiteSpace(NewSavedViewName) || ActiveFilter.IsDefault)">
+							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+							Save View
+						</button>
+					</div>
 				</div>
 
 				@if (SavedViews.Count == 0)
 				{
-					<p>No saved views for this tenant and role.</p>
+					<div class="svp-empty">
+						<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+						<p>No saved views yet. Apply filters and save them as named views for quick access.</p>
+					</div>
 				}
 				else
 				{
-					<div class="saved-views-list">
+					<div class="svp-chips">
 						@foreach (var view in SavedViews)
 						{
-							<div class="saved-view-chip">
-								<button @onclick="() => ApplySavedView(view.Name)">@view.Name</button>
-								<button @onclick="() => DeleteSavedView(view.Name)" title="Delete view">x</button>
+							<div class="svp-chip" @key="view.Name">
+								<button class="svp-chip-apply" @onclick="() => ApplySavedView(view.Name)" title="Apply view: @view.Name">
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+									@view.Name
+								</button>
+								<button class="svp-chip-delete" @onclick="() => DeleteSavedView(view.Name)" aria-label="Delete view @view.Name" title="Delete">
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+								</button>
 							</div>
 						}
 					</div>
@@ -282,28 +302,66 @@
 }
 
 <style>
-	.saved-views-panel {
-		padding: var(--space-3);
-		margin-bottom: 1rem;
-	}
-
-	.saved-views-create {
-		margin-bottom: 0.5rem;
-	}
-
-	.saved-views-list {
-		display: flex;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-	}
-
-	.saved-view-chip {
-		display: inline-flex;
-		gap: 0.25rem;
-		align-items: center;
-		padding: 0.2rem;
+	/* Saved Views Panel */
+	.svp {
+		background: var(--color-bg-surface);
 		border: 1px solid var(--color-border-default);
-		border-radius: 6px;
-		background: var(--color-bg-surface-alt);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-5);
+		margin-bottom: var(--space-4);
+		box-shadow: var(--elevation-1);
+		display: flex; flex-direction: column; gap: var(--space-3);
 	}
+	.svp-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
+	.svp-title-group { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-primary); }
+	.svp-title { margin: 0; font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
+	.svp-count {
+		background: var(--color-accent-subtle); color: var(--color-accent);
+		border-radius: var(--radius-full); padding: 0.1rem 0.45rem;
+		font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);
+	}
+	.svp-create { display: flex; gap: var(--space-2); align-items: center; }
+	.svp-input {
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-input-border);
+		border-radius: var(--radius-md);
+		background: var(--color-input-bg);
+		color: var(--color-input-text);
+		font-size: var(--font-size-sm);
+		min-width: 180px;
+	}
+	.svp-input:focus { outline: none; border-color: var(--color-input-focus-border); box-shadow: 0 0 0 3px var(--color-input-focus-ring); }
+	.svp-empty {
+		display: flex; align-items: center; gap: var(--space-3);
+		padding: var(--space-4); color: var(--color-text-muted);
+		background: var(--color-bg-surface-alt); border-radius: var(--radius-md);
+		font-size: var(--font-size-sm);
+	}
+	.svp-empty svg { flex-shrink: 0; opacity: 0.5; }
+	.svp-empty p { margin: 0; }
+	.svp-chips { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+	.svp-chip {
+		display: inline-flex; align-items: center;
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-full);
+		background: var(--color-bg-surface-alt);
+		overflow: hidden;
+	}
+	.svp-chip-apply {
+		display: inline-flex; align-items: center; gap: var(--space-1);
+		padding: 0.25rem 0.65rem;
+		background: transparent; border: none; cursor: pointer;
+		font-size: var(--font-size-xs); font-weight: var(--font-weight-medium);
+		color: var(--color-text-primary);
+		transition: color 0.12s ease;
+	}
+	.svp-chip-apply:hover { color: var(--color-accent); }
+	.svp-chip-delete {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 22px; height: 22px; margin-right: 2px;
+		background: transparent; border: none; cursor: pointer; border-radius: 50%;
+		color: var(--color-text-muted);
+		transition: background 0.12s ease, color 0.12s ease;
+	}
+	.svp-chip-delete:hover { background: var(--color-danger-bg); color: var(--color-danger-text); }
 </style>

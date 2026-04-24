@@ -60,7 +60,7 @@
 				<span class="col-customer">@item.Customer</span>
 				<span class="col-status">
 					<span class="status-quick status-@RequestStagePresentation.GetCssClass(item.Status, item.IsEscalated)">
-						@FormatStatus(item)
+						@RequestStagePresentation.GetLabel(item.Status, item.IsEscalated)
 					</span>
 				</span>
 				<span class="col-priority">
@@ -72,46 +72,61 @@
 					<div class="signal-row">
 						@if (item.IsEscalated)
 						{
-							<span class="signal-escalated">🚨</span>
+							<span class="q-chip q-chip--escalated" title="Escalated — priority handling required">
+								<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+								Escalated
+							</span>
 						}
 						@if (item.IsSLABreach)
 						{
-							<span class="signal-sla-breach">⏰</span>
+							<span class="q-chip q-chip--sla" title="SLA time limit exceeded">
+								<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+								SLA
+							</span>
 						}
 						@if (item.AgeMinutes >= 60)
 						{
-							<span class="signal-aging">⏱️@FormatAgeShort(item.AgeMinutes)</span>
+							<span class="q-chip q-chip--age" title="Time since creation">
+								<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+								@FormatAgeShort(item.AgeMinutes)
+							</span>
 						}
 						@if (item.UrgencyLevel != UrgencyLevel.Normal)
 						{
-							<span class="urgency-dot urgency-@item.UrgencyLevel.ToString().ToLowerInvariant()"></span>
+							<span class="q-chip q-chip--urgency-@item.UrgencyLevel.ToString().ToLowerInvariant()" title="@item.UrgencyLevel priority">
+								@item.UrgencyLevel.ToString()
+							</span>
 						}
 					</div>
 				</span>
-				<span class="col-summary" title="@item.Summary">@TruncateSummary(item.Summary, 40)</span>
+				<span class="col-summary" title="@item.Summary">@TruncateSummary(item.Summary, 48)</span>
 				<span class="col-actions">
-					<button class="btn-quick-action" @onclick="@(() => HandleQuickAction(item, TriageAction.ViewDetails))" title="View details">
-						👁️
+					<button class="q-action-btn q-action-btn--view" @onclick="@(() => HandleQuickAction(item, TriageAction.ViewDetails))" aria-label="View details for @item.Reference" title="View details">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+						<span class="q-action-label">View</span>
 					</button>
 					@if (item.AvailableActions.Count > 0)
 					{
 						var primaryAction = item.AvailableActions.FirstOrDefault();
 						if (primaryAction == TriageAction.Assign)
 						{
-							<button class="btn-quick-action btn-primary" @onclick="@(() => HandleQuickAction(item, TriageAction.Assign))" title="Assign">
-								➕
+							<button class="q-action-btn q-action-btn--primary" @onclick="@(() => HandleQuickAction(item, TriageAction.Assign))" aria-label="Assign @item.Reference" title="Assign to worker">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+								<span class="q-action-label">Assign</span>
 							</button>
 						}
 						else if (primaryAction == TriageAction.Complete)
 						{
-							<button class="btn-quick-action btn-primary" @onclick="@(() => HandleQuickAction(item, TriageAction.Complete))" title="Complete">
-								✅
+							<button class="q-action-btn q-action-btn--success" @onclick="@(() => HandleQuickAction(item, TriageAction.Complete))" aria-label="Complete @item.Reference" title="Mark as complete">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+								<span class="q-action-label">Done</span>
 							</button>
 						}
 						else if (primaryAction == TriageAction.Escalate)
 						{
-							<button class="btn-quick-action btn-warning" @onclick="@(() => HandleQuickAction(item, TriageAction.Escalate))" title="Escalate">
-								⚠️
+							<button class="q-action-btn q-action-btn--warning" @onclick="@(() => HandleQuickAction(item, TriageAction.Escalate))" aria-label="Escalate @item.Reference" title="Escalate to priority">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+								<span class="q-action-label">Escalate</span>
 							</button>
 						}
 					}
@@ -134,7 +149,7 @@
 	public string StickyContext { get; set; } = "High-density queue with live triage controls";
 
 	[Parameter]
-	public int ItemSize { get; set; } = 64;
+	public int ItemSize { get; set; } = 72;
 
 	[Parameter]
 	public List<OperationalQueueItem> Items { get; set; } = [];
@@ -232,8 +247,6 @@
 			});
 		}
 	}
-
-	private string FormatStatus(OperationalQueueItem item) => RequestStagePresentation.GetIcon(item.Status, item.IsEscalated);
 
 	private string FormatAgeShort(int minutes)
 	{

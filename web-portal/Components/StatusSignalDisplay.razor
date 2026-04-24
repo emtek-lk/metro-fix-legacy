@@ -3,95 +3,122 @@
 @using GTEK.FSM.WebPortal.Models
 @using GTEK.FSM.Shared.Contracts.Vocabulary
 
-<div class="status-signal">
-	<div class="status-badge" title="Request Status">
-		<span class="status-icon">
-			<span>@RequestStagePresentation.GetIcon(Status, IsEscalated)</span>
-		</span>
-		<span class="status-label status-@RequestStagePresentation.GetCssClass(Status, IsEscalated)">
-			@RequestStagePresentation.GetLabel(Status, IsEscalated)
-		</span>
-	</div>
+<div class="status-signal" role="group" aria-label="Request signals">
+    <div class="status-badge status-@RequestStagePresentation.GetCssClass(Status, IsEscalated)"
+         role="status"
+         aria-label="Status: @RequestStagePresentation.GetLabel(Status, IsEscalated)">
+        <span class="status-dot" aria-hidden="true">
+            @GetStatusIcon(Status, IsEscalated)
+        </span>
+        <span class="status-label">
+            @RequestStagePresentation.GetLabel(Status, IsEscalated)
+        </span>
+    </div>
 
-	@if (IsEscalated)
-	{
-		<div class="escalation-badge" title="Escalated to priority handling">
-			🚨
-		</div>
-	}
+    @if (IsEscalated)
+    {
+        <div class="signal-chip signal-chip--danger" role="status" aria-label="Escalated to priority handling">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Escalated
+        </div>
+    }
 
-	@if (IsSLABreach)
-	{
-		<div class="sla-breach-badge" title="SLA time exceeded">
-			⏰ SLA Breach
-		</div>
-	}
+    @if (IsSLABreach)
+    {
+        <div class="signal-chip signal-chip--sla" role="alert" aria-label="SLA time limit exceeded">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            SLA Breach
+        </div>
+    }
 
-	@if (AgeMinutes > 0)
-	{
-		<div class="age-badge" title="Time since request creation">
-			@FormatAge(AgeMinutes)
-		</div>
-	}
+    @if (AgeMinutes > 0)
+    {
+        <span class="signal-age" title="Time since request creation" aria-label="Age: @FormatAge(AgeMinutes)">
+            @FormatAge(AgeMinutes)
+        </span>
+    }
 
-	@if (UrgencyLevel != UrgencyLevel.Normal)
-	{
-		<div class="urgency-badge urgency-@UrgencyLevel.ToString().ToLowerInvariant()">
-			@GetUrgencyLabel(UrgencyLevel) · @GetUrgencyIcon(UrgencyLevel)
-		</div>
-	}
+    @if (UrgencyLevel != UrgencyLevel.Normal)
+    {
+        <div class="signal-chip @GetUrgencyChipClass(UrgencyLevel)"
+             role="status"
+             aria-label="Priority: @GetUrgencyLabel(UrgencyLevel)">
+            @GetUrgencyIcon(UrgencyLevel)
+            @GetUrgencyLabel(UrgencyLevel)
+        </div>
+    }
 
-	@if (!string.IsNullOrWhiteSpace(AssignedWorker))
-	{
-		<div class="assigned-badge" title="Currently assigned to">
-			Assigned: @AssignedWorker
-		</div>
-	}
+    @if (!string.IsNullOrWhiteSpace(AssignedWorker))
+    {
+        <span class="signal-assigned" title="Assigned to @AssignedWorker" aria-label="Assigned to @AssignedWorker">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            @AssignedWorker
+        </span>
+    }
 </div>
 
 @code {
-	[Parameter]
-	public RequestStage Status { get; set; } = RequestStage.New;
+    [Parameter] public RequestStage Status { get; set; } = RequestStage.New;
+    [Parameter] public UrgencyLevel UrgencyLevel { get; set; } = UrgencyLevel.Normal;
+    [Parameter] public int AgeMinutes { get; set; } = 0;
+    [Parameter] public bool IsEscalated { get; set; } = false;
+    [Parameter] public bool IsSLABreach { get; set; } = false;
+    [Parameter] public string? AssignedWorker { get; set; }
 
-	[Parameter]
-	public UrgencyLevel UrgencyLevel { get; set; } = UrgencyLevel.Normal;
+    private RenderFragment GetStatusIcon(RequestStage stage, bool isEscalated) => isEscalated
+        ? @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        : stage switch
+        {
+            RequestStage.New        => @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+            RequestStage.Assigned   => @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            RequestStage.InProgress => @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            RequestStage.OnHold     => @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>,
+            RequestStage.Completed  => @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+            RequestStage.Cancelled  => @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>,
+            _                       => @<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+        };
 
-	[Parameter]
-	public int AgeMinutes { get; set; } = 0;
+    private string GetUrgencyLabel(UrgencyLevel level) => level switch
+    {
+        UrgencyLevel.Moderate => "Moderate",
+        UrgencyLevel.High     => "High Priority",
+        UrgencyLevel.Critical => "Critical",
+        _                     => "Normal",
+    };
 
-	[Parameter]
-	public bool IsEscalated { get; set; } = false;
+    private string GetUrgencyChipClass(UrgencyLevel level) => level switch
+    {
+        UrgencyLevel.Critical => "signal-chip--danger",
+        UrgencyLevel.High     => "signal-chip--warning",
+        UrgencyLevel.Moderate => "signal-chip--caution",
+        _                     => "signal-chip--neutral",
+    };
 
-	[Parameter]
-	public bool IsSLABreach { get; set; } = false;
+    private RenderFragment GetUrgencyIcon(UrgencyLevel level) => level switch
+    {
+        UrgencyLevel.Critical => @<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+        UrgencyLevel.High     => @<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>,
+        UrgencyLevel.Moderate => @<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>,
+        _                     => @<text></text>,
+    };
 
-	[Parameter]
-	public string? AssignedWorker { get; set; }
-
-	private string GetUrgencyLabel(UrgencyLevel level) => level switch
-	{
-		UrgencyLevel.Moderate => "Moderate",
-		UrgencyLevel.High => "High Priority",
-		UrgencyLevel.Critical => "Critical",
-		_ => "Normal",
-	};
-
-	private string GetUrgencyIcon(UrgencyLevel level) => level switch
-	{
-		UrgencyLevel.Moderate => "↑",
-		UrgencyLevel.High => "⬆️",
-		UrgencyLevel.Critical => "🔴",
-		_ => "",
-	};
-
-	private string FormatAge(int minutes)
-	{
-		var hours = minutes / 60;
-		var mins = minutes % 60;
-
-		if (hours > 0)
-			return $"{hours}h {mins}m";
-
-		return $"{mins}m";
-	}
+    private static string FormatAge(int minutes)
+    {
+        var hours = minutes / 60;
+        var mins = minutes % 60;
+        return hours > 0 ? $"{hours}h {mins}m" : $"{mins}m";
+    }
 }
