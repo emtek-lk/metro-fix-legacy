@@ -7,7 +7,7 @@ Scope
 Prerequisites
 - .NET SDK 10 installed
 - dotnet-ef tool available
-  dotnet tool install --global dotnet-ef
+  dotnet tool install --global dotnet-ef --version 10.0.1
 - SQL Server reachable from local machine
 - ASPNETCORE_ENVIRONMENT defaults to Development unless overridden
 
@@ -41,7 +41,7 @@ Creating a New Migration
 2) Create migration:
    dotnet ef migrations add <MigrationName> \
      --project backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj \
-    --startup-project backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj \
+    --startup-project backend/api/GTEK.FSM.Backend.Api.csproj \
      --context GtekFsmDbContext \
      --output-dir ../../database/migrations
 
@@ -51,7 +51,7 @@ Creating a New Migration
 4) Generate SQL script for review/deployment artifacts:
    dotnet ef migrations script \
      --project backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj \
-    --startup-project backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj \
+    --startup-project backend/api/GTEK.FSM.Backend.Api.csproj \
      --context GtekFsmDbContext \
      --idempotent \
      --output database/scripts/gtek-fsm-migrations.sql
@@ -102,12 +102,12 @@ Rollback Guidance
 - If needed, generate migration script between versions:
   dotnet ef migrations script <FROM_MIGRATION> <TO_MIGRATION> \
     --project backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj \
-    --startup-project backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj \
+    --startup-project backend/api/GTEK.FSM.Backend.Api.csproj \
     --context GtekFsmDbContext
 
 Troubleshooting
 - Tool missing:
-  dotnet tool install --global dotnet-ef
+  dotnet tool install --global dotnet-ef --version 10.0.1
 - Build errors before migration commands:
   dotnet build backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj
 - Wrong environment loaded:

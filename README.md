@@ -85,7 +85,7 @@ cp .env.example .env
 - `SQL_SERVER_PORT=1433`
 - `SQL_DATABASE=GTEK_FSM_Local`
 - `API_PORT=5000`
-- `WEB_PORTAL_PORT=5001`
+- `WEB_PORTAL_PORT=5101`
 
 ### 4. Restore dependencies
 
@@ -119,24 +119,24 @@ Then run each service in a separate terminal:
 ./deploy/scripts/run-mobile-app.sh --run
 ```
 
-### Profile 2: Docker API + Docker Database
+### Profile 2: Full Docker Core Stack (API + DB + Web Portal)
 
-Use this when you want backend infrastructure fully containerized.
+Use this when you want core services containerized for local parity.
 
 - API: Docker Compose
 - Database: Docker Compose
+- Web portal: Docker Compose
 - Best for: environment parity and quick reset of backend infrastructure
 
-Start API + SQL:
+Start API + SQL + Web portal:
 
 ```bash
 ./deploy/scripts/dev-up.sh
 ```
 
-Then run clients from host:
+Then run mobile client from host:
 
 ```bash
-./deploy/scripts/run-web-portal.sh
 ./deploy/scripts/run-mobile-app.sh --run
 ```
 
@@ -225,7 +225,7 @@ Run with watch mode and hot reload:
 ./deploy/scripts/run-web-portal.sh
 ```
 
-Default URL: `http://localhost:5001`
+Default URL: `http://localhost:5101`
 
 ## Mobile App
 
@@ -346,7 +346,7 @@ Generate local token for auth checks:
 
 - API base: `http://localhost:5000`
 - API health: `http://localhost:5000/health`
-- Web portal: `http://localhost:5001`
+- Web portal: `http://localhost:5101`
 - SQL Server: `localhost:1433`
 
 ## VS Code Task Labels

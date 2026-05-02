@@ -33,7 +33,7 @@ SecurityConfigurationValidator.ValidateForEnvironment(builder.Configuration, bui
 
 var signalROptions = builder.Configuration.GetSection("SignalR").Get<SignalROptions>() ?? new SignalROptions();
 var allowedCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-	?? new[] { "http://localhost:5001" };
+	?? new[] { "http://localhost", "http://localhost:5001", "http://localhost:5101" };
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

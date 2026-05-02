@@ -26,7 +26,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.102'
 
       - name: Restore NuGet packages
         run: dotnet restore GTEK.FSM.slnx
@@ -52,7 +52,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.102'
 
       - name: Restore
         run: dotnet restore backend/domain.tests/GTEK.FSM.Backend.Domain.Tests.csproj
@@ -94,7 +94,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.102'
 
       - name: Restore
         run: dotnet restore backend/infrastructure.tests/GTEK.FSM.Backend.Infrastructure.Tests.csproj
@@ -137,7 +137,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.102'
 
       - name: Restore
         run: dotnet restore web-portal.tests/GTEK.FSM.WebPortal.Tests.csproj
@@ -179,7 +179,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.102'
 
       - name: Install MAUI workload
         run: dotnet workload install maui-android --skip-sign-check

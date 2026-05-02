@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+ENV PATH="$PATH:/root/.dotnet/tools"
+ARG DOTNET_EF_VERSION=10.0.1
 
 COPY ["GTEK.FSM.slnx", "./"]
 COPY ["backend/api/GTEK.FSM.Backend.Api.csproj", "backend/api/"]
@@ -8,6 +10,7 @@ COPY ["backend/domain/GTEK.FSM.Backend.Domain.csproj", "backend/domain/"]
 COPY ["backend/infrastructure/GTEK.FSM.Backend.Infrastructure.csproj", "backend/infrastructure/"]
 COPY ["shared/contracts/GTEK.FSM.Shared.Contracts.csproj", "shared/contracts/"]
 RUN dotnet restore "backend/api/GTEK.FSM.Backend.Api.csproj"
+RUN dotnet tool install --global dotnet-ef --version ${DOTNET_EF_VERSION}
 
 COPY . .
 WORKDIR /src/backend/api

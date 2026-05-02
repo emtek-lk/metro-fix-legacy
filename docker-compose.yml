@@ -1,6 +1,7 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
     container_name: gtek-fsm-sqlserver
     environment:
       ACCEPT_EULA: "Y"
@@ -31,10 +32,27 @@ services:
       ASPNETCORE_URLS: http://+:8080
       Database__ConnectionString: Server=sqlserver,1433;Database=${SQL_DATABASE};User Id=sa;Password=${SA_PASSWORD};Encrypt=true;TrustServerCertificate=true;
     ports:
-      - "${API_PORT}:8080"
+      - "${API_PORT:-5000}:8080"
     depends_on:
       sqlserver:
         condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - gtek-fsm-net
+
+  web-portal:
+    image: ${WEB_PORTAL_IMAGE:-gtek-fsm-web-portal:local}
+    build:
+      context: .
+      dockerfile: web-portal/Dockerfile
+      args:
+        WEB_API_BASE_URL: http://localhost:${API_PORT:-5000}
+    container_name: gtek-fsm-web-portal
+    ports:
+      - "${WEB_PORTAL_PORT:-5101}:80"
+    depends_on:
+      backend-api:
+        condition: service_started
     restart: unless-stopped
     networks:
       - gtek-fsm-net
