@@ -24,6 +24,7 @@ cd "$PROJECT_ROOT"
 
 echo "🏗️  Building Docker image..."
 docker build \
+    --platform linux/amd64 \
     -f web-portal/Dockerfile \
     -t "$FULL_IMAGE_NAME" \
     --build-arg WEB_API_BASE_URL="$API_BASE_URL" \

@@ -22,6 +22,7 @@ cd "$PROJECT_ROOT"
 
 echo "🏗️  Building Docker image..."
 docker build \
+    --platform linux/amd64 \
     -f backend/api/Dockerfile \
     -t "$FULL_IMAGE_NAME" \
     --label "git.commit=$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')" \
