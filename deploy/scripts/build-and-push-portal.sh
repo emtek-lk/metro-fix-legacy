@@ -27,7 +27,6 @@ docker build \
     --platform linux/amd64 \
     -f web-portal/Dockerfile \
     -t "$FULL_IMAGE_NAME" \
-    --build-arg WEB_API_BASE_URL="$API_BASE_URL" \
     --label "git.commit=$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')" \
     --label "build.date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
     .
