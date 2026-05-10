@@ -77,8 +77,15 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         _realtimeClient = Application.Current?.Handler?.MauiContext?.Services?.GetService<IMobileOperationalRealtimeClient>();
         if (_realtimeClient is not null)
         {
+            _realtimeClient.ConnectionStateChanged += OnRealtimeConnectionStateChanged;
             _statusSubscription = _realtimeClient.SubscribeToStatusUpdates(HandleStatusUpdateAsync);
             _ = _realtimeClient.EnsureConnectedAsync();
+            UpdateRealtimeStatus(_realtimeClient.ConnectionState);
+        }
+        else
+        {
+            RequestSyncStatusLabel.Text = "Realtime unavailable";
+            RequestSyncPillLabel.Text = "OFF";
         }
 
         _ = LoadLiveRequestsAsync();
@@ -99,6 +106,11 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
 
     public void Dispose()
     {
+        if (_realtimeClient is not null)
+        {
+            _realtimeClient.ConnectionStateChanged -= OnRealtimeConnectionStateChanged;
+        }
+
         _statusSubscription?.Dispose();
     }
 
@@ -136,7 +148,9 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
 
         if (!string.IsNullOrWhiteSpace(selected) && selected != "Cancel")
         {
-            await DisplayAlertAsync("Filter", $"{selected} filter selected.", "OK");
+            ActiveRequestFilterLabel.Text = selected;
+            await ActiveRequestFilterLabel.FadeTo(0.35, 70);
+            await ActiveRequestFilterLabel.FadeTo(1, 120);
         }
     }
 
@@ -150,6 +164,7 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         SelectedRequestWorkerLabel.Text = "Assigned worker: checking detail...";
         SelectedRequestJobLabel.Text = "Active job: checking detail...";
         SelectedRequestUpdatedLabel.Text = string.Empty;
+        TechnicianTrustLabel.Text = "Assigned technician details will appear after dispatch confirms the visit.";
         _selectedRequestActiveJobId = string.Empty;
         UpdateCustomerFeedbackAvailability(request.StatusLabel);
 
@@ -381,6 +396,14 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         }
     }
 
+    private async void OnCreateRequestFabClicked(object sender, EventArgs e)
+    {
+        await ((VisualElement)sender).ScaleTo(0.92, 70, Easing.CubicOut);
+        await ((VisualElement)sender).ScaleTo(1, 120, Easing.CubicIn);
+        RequestDetailsEditor.Focus();
+        CreateRequestFeedbackLabel.Text = "Ready when you are. Add the issue details and submit.";
+    }
+
     private void EnsureCreatedRequestVisible(CreateServiceRequestResponse createdRequest)
     {
         var existing = _requests.FirstOrDefault(item => string.Equals(item.Id, createdRequest.RequestId, StringComparison.Ordinal));
@@ -464,9 +487,61 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         SelectedRequestWorkerLabel.Text = presentation.WorkerText;
         SelectedRequestJobLabel.Text = presentation.JobText;
         SelectedRequestUpdatedLabel.Text = presentation.UpdatedText;
+        TechnicianTrustLabel.Text = string.IsNullOrWhiteSpace(presentation.WorkerText)
+            ? "Technician assignment is still pending."
+            : $"{presentation.WorkerText}. ETA and arrival confidence will update live.";
         UpdateCustomerFeedbackAvailability(syncedRequest.StatusLabel);
 
         RenderTimeline(presentation.TimelineLines);
+    }
+
+    private async void OnRefreshRequestCenter(object sender, EventArgs e)
+    {
+        RequestSyncStatusLabel.Text = "Refreshing requests and categories...";
+        await LoadLiveRequestsAsync();
+        await LoadCategoriesAsync();
+        RequestRefreshView.IsRefreshing = false;
+        RequestSyncStatusLabel.Text = $"Synced {DateTime.Now:t}";
+    }
+
+    private async void OnApproveSelectedQuoteClicked(object sender, EventArgs e)
+    {
+        if (_selectedRequest is null)
+        {
+            return;
+        }
+
+        await DisplayAlertAsync("Approval", $"Quote approval pathway opened for {_selectedRequest.Id}.", "OK");
+    }
+
+    private async void OnRejectSelectedQuoteClicked(object sender, EventArgs e)
+    {
+        if (_selectedRequest is null)
+        {
+            return;
+        }
+
+        await DisplayAlertAsync("Approval", $"Quote rejection pathway opened for {_selectedRequest.Id}.", "OK");
+    }
+
+    private void OnRealtimeConnectionStateChanged(MobileOperationalRealtimeConnectionState state)
+    {
+        MainThread.BeginInvokeOnMainThread(() => UpdateRealtimeStatus(state));
+    }
+
+    private void UpdateRealtimeStatus(MobileOperationalRealtimeConnectionState state)
+    {
+        RequestSyncStatusLabel.Text = state switch
+        {
+            MobileOperationalRealtimeConnectionState.Connected => $"Live updates connected • {DateTime.Now:t}",
+            MobileOperationalRealtimeConnectionState.Connecting => "Connecting to live updates...",
+            MobileOperationalRealtimeConnectionState.Reconnecting => "Reconnecting • actions will refresh shortly",
+            MobileOperationalRealtimeConnectionState.AuthenticationRequired => "Session refresh required for live updates",
+            MobileOperationalRealtimeConnectionState.Faulted => "Live updates paused • pull to refresh",
+            _ => "Offline mode • showing cached request data",
+        };
+
+        RequestSyncPillLabel.Text = state == MobileOperationalRealtimeConnectionState.Connected ? "LIVE" : "SYNC";
     }
 
     private void RenderTimeline(IReadOnlyList<string> timelineLines)

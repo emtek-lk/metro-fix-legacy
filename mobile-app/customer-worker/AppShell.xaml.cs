@@ -116,6 +116,7 @@ public partial class AppShell : Shell
         WorkerRoleButton.BackgroundColor = this.isWorkerWorkspace ? activeBackground : inactiveBackground;
         WorkerRoleButton.TextColor = this.isWorkerWorkspace ? activeText : inactiveText;
         WorkerRoleButton.Scale = this.isWorkerWorkspace ? 1.02 : 1;
+        RoleBadgeLabel.Text = this.isWorkerWorkspace ? "WORKER" : "CUSTOMER";
     }
 
     private void OnToggleThemeClicked(object sender, EventArgs e)

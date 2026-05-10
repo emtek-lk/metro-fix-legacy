@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.ProfilePage"
              Title="Profile">
-    <ScrollView>
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
         <VerticalStackLayout Style="{StaticResource StylePageContainer}">
             <VerticalStackLayout Style="{StaticResource StylePageHeader}">
                 <Label Text="WORKER" Style="{StaticResource StyleEyebrow}" />
@@ -11,6 +13,23 @@
                 <Label Text="Worker profile screens stay sparse, readable, and consistent with the field workflow."
                        Style="{StaticResource StylePageSubtitle}" />
             </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Border Style="{StaticResource StyleMetricCard}">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Completion" Style="{StaticResource StyleCaption}" />
+                        <Label Text="94%" FontSize="24" FontFamily="{StaticResource FontFamilySemibold}" />
+                        <Label Text="This week" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource StyleMetricCard}">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Response" Style="{StaticResource StyleCaption}" />
+                        <Label Text="18m" FontSize="24" FontFamily="{StaticResource FontFamilySemibold}" />
+                        <Label Text="Average" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
             <Border Style="{StaticResource StyleElevatedCardBorder}">
                 <VerticalStackLayout Spacing="10">
@@ -24,4 +43,6 @@
             </Border>
         </VerticalStackLayout>
     </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Worker" ActiveItem="Profile" />
+    </Grid>
 </ContentPage>

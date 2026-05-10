@@ -47,6 +47,24 @@
                                Style="{StaticResource StyleCaption}" />
                     </VerticalStackLayout>
                 </Grid>
+                <Border Style="{StaticResource StyleCardBorder}" Padding="12">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Safry Workspace" Style="{StaticResource StyleFieldLabel}" />
+                                <Label Text="Profile readiness and role tools" Style="{StaticResource StyleCaption}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1" Style="{StaticResource StyleSuccessPill}" VerticalOptions="Center">
+                                <Label x:Name="RoleBadgeLabel"
+                                       Text="CUSTOMER"
+                                       FontFamily="{StaticResource FontFamilySemibold}"
+                                       FontSize="{StaticResource FontSizeTiny}"
+                                       TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                            </Border>
+                        </Grid>
+                        <ProgressBar Progress="0.82" HeightRequest="5" />
+                    </VerticalStackLayout>
+                </Border>
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Workspace" Style="{StaticResource StyleFieldLabel}" />
                     <Border x:Name="RoleSwitchPanel"
@@ -82,7 +100,7 @@
         <ShellContent ContentTemplate="{DataTemplate customer:RequestsPage}" Route="CustomerApprovalsContent" />
     </FlyoutItem>
     <FlyoutItem x:Name="CustomerNotificationsItem" Title="Notifications" Route="CustomerNotifications">
-        <ShellContent ContentTemplate="{DataTemplate customer:HomePage}" Route="CustomerNotificationsContent" />
+        <ShellContent ContentTemplate="{DataTemplate customer:NotificationsPage}" Route="CustomerNotificationsContent" />
     </FlyoutItem>
     <FlyoutItem x:Name="CustomerProfileItem" Title="Customer Profile" Route="CustomerProfile">
         <ShellContent ContentTemplate="{DataTemplate customer:ProfilePage}" Route="CustomerProfileContent" />
@@ -104,10 +122,10 @@
         <ShellContent ContentTemplate="{DataTemplate worker:RequestsPage}" Route="WorkerRequestsContent" />
     </FlyoutItem>
     <FlyoutItem x:Name="WorkerScheduleItem" Title="Schedule" Route="WorkerSchedule">
-        <ShellContent ContentTemplate="{DataTemplate worker:JobsPage}" Route="WorkerScheduleContent" />
+        <ShellContent ContentTemplate="{DataTemplate worker:SchedulePage}" Route="WorkerScheduleContent" />
     </FlyoutItem>
     <FlyoutItem x:Name="WorkerNotificationsItem" Title="Notifications" Route="WorkerNotifications">
-        <ShellContent ContentTemplate="{DataTemplate worker:HomePage}" Route="WorkerNotificationsContent" />
+        <ShellContent ContentTemplate="{DataTemplate worker:NotificationsPage}" Route="WorkerNotificationsContent" />
     </FlyoutItem>
     <FlyoutItem x:Name="WorkerPerformanceItem" Title="Performance" Route="WorkerPerformance">
         <ShellContent ContentTemplate="{DataTemplate worker:ProfilePage}" Route="WorkerPerformanceContent" />

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.ProfilePage"
              Title="Profile">
-    <ScrollView>
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
         <VerticalStackLayout Style="{StaticResource StylePageContainer}">
             <VerticalStackLayout Style="{StaticResource StylePageHeader}">
                 <Label Text="CUSTOMER" Style="{StaticResource StyleEyebrow}" />
@@ -11,6 +13,20 @@
                 <Label Text="Keep your contact details updated for dispatch and support communication."
                        Style="{StaticResource StylePageSubtitle}" />
             </VerticalStackLayout>
+
+            <Border Style="{StaticResource StyleStatusStrip}">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8">
+                    <Label Text="Profile completion" Style="{StaticResource StyleFieldLabel}" />
+                    <Border Grid.Column="1" Style="{StaticResource StyleSuccessPill}">
+                        <Label Text="82%"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               FontSize="{StaticResource FontSizeTiny}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                    </Border>
+                    <ProgressBar Grid.Row="1" Grid.ColumnSpan="2" Progress="0.82" HeightRequest="5" />
+                    <Label Grid.Row="2" Grid.ColumnSpan="2" Text="Add emergency contact and preferred access notes to speed up dispatch." Style="{StaticResource StyleCaption}" />
+                </Grid>
+            </Border>
 
             <Border Style="{StaticResource StyleElevatedCardBorder}">
                 <VerticalStackLayout Spacing="12">
@@ -44,4 +60,6 @@
             </Border>
         </VerticalStackLayout>
     </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Customer" ActiveItem="Profile" />
+    </Grid>
 </ContentPage>

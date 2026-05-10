@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.HomePage"
              Title="GTEK FSM">
-    <ScrollView>
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
         <VerticalStackLayout Style="{StaticResource StylePageContainer}">
             <Border Style="{StaticResource StyleElevatedCardBorder}">
                 <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="56,*,Auto" RowSpacing="4" ColumnSpacing="12">
@@ -59,6 +61,54 @@
                     </VerticalStackLayout>
                 </Border>
             </Grid>
+
+            <Border Style="{StaticResource StyleStatusStrip}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Realtime sync active" Style="{StaticResource StyleFieldLabel}" />
+                        <Label Text="Last update just now • 2 notifications unread" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" Style="{StaticResource StyleSuccessPill}" VerticalOptions="Center">
+                        <Label Text="ONLINE"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               FontSize="{StaticResource FontSizeTiny}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource StyleCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Label Text="Needs Attention" Style="{StaticResource StyleSectionHeader}" />
+                        <Border Grid.Column="1" Style="{StaticResource StyleWarningPill}">
+                            <Label Text="ACTION"
+                                   FontFamily="{StaticResource FontFamilySemibold}"
+                                   FontSize="{StaticResource FontSizeTiny}"
+                                   TextColor="{AppThemeBinding Light={StaticResource ColorStatusWarningLight}, Dark={StaticResource ColorStatusWarningDark}}" />
+                        </Border>
+                    </Grid>
+                    <Border Style="{StaticResource StyleSoftPanel}">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
+                            <Label Text="Quote awaiting approval" Style="{StaticResource StyleCardTitle}" />
+                            <Label Grid.Column="1" Text="LKR 18,500" Style="{StaticResource StyleFieldLabel}" />
+                            <Label Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Text="Rooftop AC compressor repair can start after confirmation."
+                                   Style="{StaticResource StyleMutedText}" />
+                        </Grid>
+                    </Border>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Button Text="Approve"
+                                Style="{StaticResource StyleCompactButton}"
+                                Clicked="OnApproveQuoteClicked" />
+                        <Button Grid.Column="1"
+                                Text="Ask Support"
+                                Style="{StaticResource StyleSecondaryButton}"
+                                Clicked="OnContactSupportClicked" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
 
             <Border Style="{StaticResource StyleCardBorder}">
                 <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="10">
@@ -167,9 +217,9 @@
                     <Label Text="Recent Activity" Style="{StaticResource StyleSectionHeader}" />
                     <Border Style="{StaticResource StyleSoftPanel}">
                         <VerticalStackLayout Spacing="8">
-                            <Label Text="Technician check-in window: 2:00 PM - 4:00 PM" />
-                            <Label Text="Pending approval: Quote for rooftop unit service" />
-                            <Label Text="Profile reminder: verify emergency contact" />
+                            <Label Text="14:10 • Technician assigned to AC Cooling Issue" />
+                            <Label Text="13:45 • Quote generated for rooftop unit service" />
+                            <Label Text="09:20 • Water Pressure Drop moved to Assigned" />
                         </VerticalStackLayout>
                     </Border>
                     <Button Text="Contact Support"
@@ -179,4 +229,6 @@
             </Border>
         </VerticalStackLayout>
     </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Customer" ActiveItem="Home" />
+    </Grid>
 </ContentPage>

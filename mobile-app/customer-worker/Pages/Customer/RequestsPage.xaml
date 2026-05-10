@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.RequestsPage"
              Title="GTEK FSM">
-    <ScrollView>
+    <Grid RowDefinitions="*,Auto">
+    <RefreshView x:Name="RequestRefreshView"
+                 Grid.Row="0"
+                 Refreshing="OnRefreshRequestCenter">
+        <ScrollView>
         <VerticalStackLayout Style="{StaticResource StylePageContainer}">
             <VerticalStackLayout Style="{StaticResource StylePageHeader}">
                 <Label Text="CUSTOMER" Style="{StaticResource StyleEyebrow}" />
@@ -11,6 +16,25 @@
                 <Label Text="Create service requests, inspect details, and follow live progression."
                        Style="{StaticResource StylePageSubtitle}" />
             </VerticalStackLayout>
+
+            <Border Style="{StaticResource StyleStatusStrip}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Spacing="3">
+                        <Label x:Name="RequestSyncStatusLabel"
+                               Text="Realtime status initializing"
+                               Style="{StaticResource StyleFieldLabel}" />
+                        <Label Text="Pull to refresh • updates appear automatically when dispatch changes status"
+                               Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" Style="{StaticResource StyleSuccessPill}" VerticalOptions="Center">
+                        <Label x:Name="RequestSyncPillLabel"
+                               Text="SYNC"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               FontSize="{StaticResource FontSizeTiny}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                    </Border>
+                </Grid>
+            </Border>
 
             <Border Style="{StaticResource StyleElevatedCardBorder}">
                 <VerticalStackLayout Spacing="12">
@@ -51,6 +75,14 @@
                         <SearchBar Placeholder="Search requests"
                                    HeightRequest="48" />
                     </Border>
+                    <HorizontalStackLayout Spacing="8">
+                        <Border Style="{StaticResource StyleActionChip}">
+                            <Label x:Name="ActiveRequestFilterLabel" Text="All requests" Style="{StaticResource StyleCaption}" />
+                        </Border>
+                        <Border Style="{StaticResource StyleActionChip}">
+                            <Label Text="Sort: newest" Style="{StaticResource StyleCaption}" />
+                        </Border>
+                    </HorizontalStackLayout>
                     <CollectionView x:Name="RequestsCollectionView"
                                     SelectionMode="Single"
                                     SelectionChanged="OnRequestSelectionChanged"
@@ -124,6 +156,20 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <Border Style="{StaticResource StyleCardBorder}" Padding="14">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="48,*" RowSpacing="4" ColumnSpacing="12">
+                            <Border Style="{StaticResource StyleIconBadge}">
+                                <Label Text="T" HorizontalOptions="Center" VerticalOptions="Center" FontFamily="{StaticResource FontFamilySemibold}" TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Technician" Style="{StaticResource StyleFieldLabel}" />
+                                <Label x:Name="TechnicianTrustLabel" Text="Assigned technician details will appear after dispatch confirms the visit." Style="{StaticResource StyleMutedText}" />
+                            </VerticalStackLayout>
+                            <ProgressBar Grid.Row="1" Grid.ColumnSpan="2" Progress="0.62" HeightRequest="6" Margin="0,8,0,0" />
+                            <Label Grid.Row="2" Grid.ColumnSpan="2" Text="ETA confidence updates as the worker progresses through check-in and travel states." Style="{StaticResource StyleCaption}" />
+                        </Grid>
+                    </Border>
+
                     <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
                         <Button Text="Escalate"
                                 Style="{StaticResource StyleCompactButton}"
@@ -145,6 +191,31 @@
                     <Label Text="Activity Timeline" Style="{StaticResource StyleCardTitle}" Margin="0,8,0,0" />
                     <VerticalStackLayout x:Name="RequestTimelineLayout" Spacing="8" />
 
+                    <Label Text="Approvals &amp; Attachments" Style="{StaticResource StyleCardTitle}" Margin="0,8,0,0" />
+                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
+                        <Border Style="{StaticResource StyleSoftPanel}">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Quote Review" Style="{StaticResource StyleFieldLabel}" />
+                                <Label Text="No pending quote selected" Style="{StaticResource StyleCaption}" />
+                            </VerticalStackLayout>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource StyleSoftPanel}">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Attachments" Style="{StaticResource StyleFieldLabel}" />
+                                <Label Text="Photos and invoices appear here" Style="{StaticResource StyleCaption}" />
+                            </VerticalStackLayout>
+                        </Border>
+                        <Button Grid.Row="1"
+                                Text="Approve"
+                                Style="{StaticResource StyleCompactButton}"
+                                Clicked="OnApproveSelectedQuoteClicked" />
+                        <Button Grid.Row="1"
+                                Grid.Column="1"
+                                Text="Reject"
+                                Style="{StaticResource StyleSecondaryButton}"
+                                Clicked="OnRejectSelectedQuoteClicked" />
+                    </Grid>
+
                     <Label Text="Service Feedback" Style="{StaticResource StyleCardTitle}" Margin="0,8,0,0" />
                     <Label x:Name="CustomerFeedbackHintLabel" Style="{StaticResource StyleMutedText}" />
                     <Picker x:Name="CustomerFeedbackTypePicker" Title="Select feedback category" />
@@ -161,5 +232,15 @@
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+    </RefreshView>
+    <Button Grid.Row="0"
+            Text="+"
+            Style="{StaticResource StyleFloatingActionButton}"
+            HorizontalOptions="End"
+            VerticalOptions="End"
+            Margin="0,0,18,18"
+            Clicked="OnCreateRequestFabClicked" />
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Customer" ActiveItem="Requests" />
+    </Grid>
 </ContentPage>

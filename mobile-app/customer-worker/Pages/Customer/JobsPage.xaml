@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.JobsPage"
              Title="Jobs">
-    <ScrollView>
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
         <VerticalStackLayout Style="{StaticResource StylePageContainer}">
             <VerticalStackLayout Style="{StaticResource StylePageHeader}">
                 <Label Text="CUSTOMER" Style="{StaticResource StyleEyebrow}" />
@@ -24,4 +26,6 @@
             </Border>
         </VerticalStackLayout>
     </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Customer" ActiveItem="Jobs" />
+    </Grid>
 </ContentPage>

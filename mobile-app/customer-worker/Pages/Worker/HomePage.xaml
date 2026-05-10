@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.HomePage"
              Title="GTEK FSM">
-    <ScrollView>
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
         <VerticalStackLayout Style="{StaticResource StylePageContainer}">
             <Border Style="{StaticResource StyleElevatedCardBorder}">
                 <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="56,*,Auto" RowSpacing="4" ColumnSpacing="12">
@@ -62,6 +64,44 @@
                     </VerticalStackLayout>
                 </Border>
             </Grid>
+
+            <Border Style="{StaticResource StyleStatusStrip}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Field mode ready" Style="{StaticResource StyleFieldLabel}" />
+                        <Label Text="3 actions can queue offline • live dispatch connected" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" Style="{StaticResource StyleSuccessPill}" VerticalOptions="Center">
+                        <Label Text="SYNC"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               FontSize="{StaticResource FontSizeTiny}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource StyleCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Label Text="Today Schedule" Style="{StaticResource StyleSectionHeader}" />
+                        <Border Grid.Column="1" Style="{StaticResource StyleInfoPill}">
+                            <Label Text="4 STOPS"
+                                   FontFamily="{StaticResource FontFamilySemibold}"
+                                   FontSize="{StaticResource FontSizeTiny}"
+                                   TextColor="{AppThemeBinding Light={StaticResource ColorStatusInfoLight}, Dark={StaticResource ColorStatusInfoDark}}" />
+                        </Border>
+                    </Grid>
+                    <Border Style="{StaticResource StyleSoftPanel}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="09:30 • Generator inspection • Central Arcade" />
+                            <Label Text="11:45 • Water pump calibration • Palm Residency" />
+                            <Label Text="14:00 • AC compressor fault • Lakepoint Towers" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Button Text="Open Assigned Jobs"
+                            Clicked="OnOpenJobsWorkspaceClicked" />
+                </VerticalStackLayout>
+            </Border>
 
             <Border Style="{StaticResource StyleCardBorder}">
                 <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="10">
@@ -178,4 +218,6 @@
             </Border>
         </VerticalStackLayout>
     </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Worker" ActiveItem="Home" />
+    </Grid>
 </ContentPage>

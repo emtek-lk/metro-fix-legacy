@@ -177,6 +177,27 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorStatusSuccessBgLight}, Dark={StaticResource ColorStatusSuccessBgDark}}" />
     </Style>
 
+    <Style x:Key="StyleWarningPill" TargetType="Border" BasedOn="{StaticResource StyleAccentPill}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorStatusWarningBgLight}, Dark={StaticResource ColorStatusWarningBgDark}}" />
+    </Style>
+
+    <Style x:Key="StyleInfoPill" TargetType="Border" BasedOn="{StaticResource StyleAccentPill}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorStatusInfoBgLight}, Dark={StaticResource ColorStatusInfoBgDark}}" />
+    </Style>
+
+    <Style x:Key="StyleActionChip" TargetType="Border" BasedOn="{StaticResource StyleSoftPanel}">
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 999" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceElevatedDark}}" />
+    </Style>
+
+    <Style x:Key="StyleStatusStrip" TargetType="Border">
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 18" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorBgSubtleLight}, Dark={StaticResource ColorBgSubtleDark}}" />
+    </Style>
+
     <Style x:Key="StyleSecondaryButton" TargetType="Button">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilySemibold}" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeButton}" />
@@ -217,5 +238,25 @@
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextPrimaryDark}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceElevatedDark}}" />
+    </Style>
+
+    <Style x:Key="StyleBottomNavigation" TargetType="Border">
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource ColorBorderSubtleLight}, Dark={StaticResource ColorBorderDefaultDark}}" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 24,24,0,0" />
+        <Setter Property="Padding" Value="10,8,10,10" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}" />
+    </Style>
+
+    <Style x:Key="StyleFloatingActionButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilySemibold}" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="WidthRequest" Value="58" />
+        <Setter Property="HeightRequest" Value="58" />
+        <Setter Property="MinimumHeightRequest" Value="58" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorAccentLight}, Dark={StaticResource ColorAccentDark}}" />
     </Style>
 </ResourceDictionary>
