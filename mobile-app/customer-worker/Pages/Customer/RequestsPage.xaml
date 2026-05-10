@@ -2,123 +2,164 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.RequestsPage"
-             Title="Requests">
-       <Grid Padding="20,18,20,24" RowDefinitions="Auto,Auto,*" RowSpacing="12">
-              <Label Text="Request Center" Style="{StaticResource StylePageTitle}" />
-              <Label Grid.Row="1"
-                        Text="Select a request to inspect details and live stage progression."
-                        Style="{StaticResource StylePageSubtitle}" />
+             Title="GTEK FSM">
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="CUSTOMER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="My Requests" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Create service requests, inspect details, and follow live progression."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-              <ScrollView Grid.Row="2">
-                     <VerticalStackLayout Spacing="12">
-                            <Border Style="{StaticResource StyleCardBorder}">
-                                   <VerticalStackLayout Spacing="8">
-                                          <Label Text="Create New Request" Style="{StaticResource StyleSectionHeader}" />
-                                          <Label Text="Choose a category and describe the issue so dispatch can route it quickly."
-                                                 FontSize="12"
-                                                 TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Create New Request" Style="{StaticResource StyleSectionHeader}" />
 
-                                          <Label Text="Category" FontAttributes="Bold" FontSize="13" />
-                                          <Picker x:Name="CategoryPicker"
-                                                  Title="Select category"
-                                                  ItemDisplayBinding="{Binding Name}" />
+                    <Label Text="Category" Style="{StaticResource StyleFieldLabel}" />
+                    <Picker x:Name="CategoryPicker"
+                            Title="Select category"
+                            ItemDisplayBinding="{Binding Name}" />
 
-                                          <Label Text="Details" FontAttributes="Bold" FontSize="13" />
-                                          <Editor x:Name="RequestDetailsEditor"
-                                                  Placeholder="Describe the issue in at least 10 characters"
-                                                  AutoSize="TextChanges"
-                                                  MaxLength="150"
-                                                  HeightRequest="100" />
+                    <Label Text="Details" Style="{StaticResource StyleFieldLabel}" />
+                    <Editor x:Name="RequestDetailsEditor"
+                            Placeholder="Describe the issue in at least 10 characters"
+                            AutoSize="TextChanges"
+                            MaxLength="150"
+                            HeightRequest="108" />
 
-                                          <Label x:Name="CreateRequestFeedbackLabel"
-                                                 FontSize="12"
-                                                 TextColor="{AppThemeBinding Light=#B42318, Dark=#FCA5A5}" />
+                    <Label x:Name="CreateRequestFeedbackLabel"
+                           Style="{StaticResource StyleCaption}"
+                           TextColor="{AppThemeBinding Light={StaticResource ColorStatusErrorLight}, Dark={StaticResource ColorStatusErrorDark}}" />
 
-                                          <Button Text="Submit Request"
-                                                  Clicked="OnSubmitRequestClicked" />
-                                   </VerticalStackLayout>
-                            </Border>
+                    <Button Text="Submit Request"
+                            Clicked="OnSubmitRequestClicked" />
+                </VerticalStackLayout>
+            </Border>
 
-                            <Border Style="{StaticResource StyleCardBorder}" Padding="12">
-                                   <CollectionView x:Name="RequestsCollectionView"
-                                                               SelectionMode="Single"
-                                                               SelectionChanged="OnRequestSelectionChanged"
-                                                               HeightRequest="240">
-                                          <CollectionView.ItemTemplate>
-                                                 <DataTemplate>
-                                                        <Border StrokeShape="RoundRectangle 14" Padding="12" Margin="0,0,0,8" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                                                               <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
-                                                                      <Label Text="{Binding Title}" FontAttributes="Bold" />
-                                                                      <Label Grid.Column="1"
-                                                                                Text="{Binding StatusLabel}"
-                                                                                TextColor="{Binding StatusColor}"
-                                                                                FontAttributes="Bold"
-                                                                                FontSize="12" />
-                                                                      <Label Grid.Row="1" Text="{Binding Summary}" TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                                                      <Label Grid.Row="2" Text="{Binding EtaText}" FontSize="12" />
-                                                               </Grid>
-                                                        </Border>
-                                                 </DataTemplate>
-                                          </CollectionView.ItemTemplate>
-                                   </CollectionView>
-                            </Border>
+            <Border Style="{StaticResource StyleCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Label Text="Active Requests" Style="{StaticResource StyleSectionHeader}" VerticalOptions="Center" />
+                        <Button Grid.Column="1"
+                                Text="≡"
+                                Style="{StaticResource StyleCompactButton}"
+                                MinimumWidthRequest="48"
+                                Clicked="OnOpenRequestFiltersClicked" />
+                    </Grid>
+                    <Border Style="{StaticResource StyleSearchField}">
+                        <SearchBar Placeholder="Search requests"
+                                   HeightRequest="48" />
+                    </Border>
+                    <CollectionView x:Name="RequestsCollectionView"
+                                    SelectionMode="Single"
+                                    SelectionChanged="OnRequestSelectionChanged"
+                                    HeightRequest="360">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource StyleFeatureCard}" Margin="0,0,0,12" MinimumHeightRequest="0">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroupList>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal" />
+                                                <VisualState x:Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="Scale" Value="1.01" />
+                                                        <Setter Property="StrokeThickness" Value="1.5" />
+                                                        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource ColorAccentLight}, Dark={StaticResource ColorAccentDark}}" />
+                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ColorAccentBgLight}, Dark={StaticResource ColorBgSurfaceElevatedDark}}" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateGroupList>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6" ColumnSpacing="10">
+                                        <Label Text="{Binding Title}"
+                                               Style="{StaticResource StyleCardTitle}"
+                                               FontSize="{StaticResource FontSizeBodyLarge}" />
+                                        <Border Grid.Column="1"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 999"
+                                                Padding="10,4"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource ColorAccentBgLight}, Dark={StaticResource ColorAccentBgDark}}">
+                                            <Label Text="{Binding StatusLabel}"
+                                                   TextColor="{Binding StatusColor}"
+                                                   FontFamily="{StaticResource FontFamilySemibold}"
+                                                   FontSize="{StaticResource FontSizeTiny}" />
+                                        </Border>
+                                        <Label Grid.Row="1"
+                                               Grid.ColumnSpan="2"
+                                               Text="{Binding Summary}"
+                                               Style="{StaticResource StyleMutedText}" />
+                                        <Label Grid.Row="2"
+                                               Grid.ColumnSpan="2"
+                                               Text="{Binding EtaText}"
+                                               Style="{StaticResource StyleCaption}" />
+                                        <Button Grid.Row="3"
+                                                Grid.ColumnSpan="2"
+                                                Text="View Details"
+                                                Style="{StaticResource StyleSecondaryButton}"
+                                                Margin="0,4,0,0" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
 
-                            <Border Style="{StaticResource StyleCardBorder}">
-                                   <VerticalStackLayout Spacing="8">
-                                          <Label Text="Request Detail" Style="{StaticResource StyleSectionHeader}" />
-                                          <Label x:Name="SelectedRequestTitleLabel" FontSize="16" FontAttributes="Bold" />
-                                          <Label x:Name="SelectedRequestDescriptionLabel"
-                                                    TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                          <Label x:Name="SelectedRequestMetaLabel" FontSize="12" />
-                                          <Label x:Name="SelectedRequestLifecycleLabel" FontSize="12" FontAttributes="Bold" />
-                                          <Label x:Name="SelectedRequestWorkerLabel" FontSize="12" />
-                                          <Label x:Name="SelectedRequestJobLabel" FontSize="12" />
-                                          <Label x:Name="SelectedRequestUpdatedLabel" FontSize="12"
-                                                 TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Request Detail" Style="{StaticResource StyleSectionHeader}" />
+                    <Label x:Name="SelectedRequestTitleLabel" Style="{StaticResource StyleCardTitle}" />
+                    <Label x:Name="SelectedRequestDescriptionLabel" Style="{StaticResource StyleMutedText}" />
 
-                                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                                  <Button Text="Escalate"
-                                                         FontSize="12"
-                                                         Padding="8,6"
-                                                         Clicked="OnEscalateRequestClicked" />
-                                                  <Button Grid.Column="1"
-                                                         Text="Refresh ETA"
-                                                         FontSize="12"
-                                                         Padding="8,6"
-                                                         Clicked="OnRefreshEtaClicked" />
-                                                  <Button Grid.Column="2"
-                                                         Text="Message Tech"
-                                                         FontSize="12"
-                                                         Padding="8,6"
-                                                         Clicked="OnMessageTechnicianClicked" />
-                                            </Grid>
+                    <Border Style="{StaticResource StyleSoftPanel}">
+                        <VerticalStackLayout Spacing="6">
+                            <Label x:Name="SelectedRequestMetaLabel" Style="{StaticResource StyleCaption}" />
+                            <Label x:Name="SelectedRequestLifecycleLabel" Style="{StaticResource StyleFieldLabel}" />
+                            <Label x:Name="SelectedRequestWorkerLabel" Style="{StaticResource StyleCaption}" />
+                            <Label x:Name="SelectedRequestJobLabel" Style="{StaticResource StyleCaption}" />
+                            <Label x:Name="SelectedRequestUpdatedLabel" Style="{StaticResource StyleCaption}" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                                          <Label Text="Status Tracking" FontSize="15" FontAttributes="Bold" Margin="0,6,0,0" />
-                                          <VerticalStackLayout x:Name="StatusTimelineLayout" Spacing="6" />
+                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
+                        <Button Text="Escalate"
+                                Style="{StaticResource StyleCompactButton}"
+                                Clicked="OnEscalateRequestClicked" />
+                        <Button Grid.Column="1"
+                                Text="Refresh ETA"
+                                Style="{StaticResource StyleCompactButton}"
+                                Clicked="OnRefreshEtaClicked" />
+                        <Button Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                Text="Message Technician"
+                                Style="{StaticResource StyleSecondaryButton}"
+                                Clicked="OnMessageTechnicianClicked" />
+                    </Grid>
 
-                                          <Label Text="Activity Timeline" FontSize="15" FontAttributes="Bold" Margin="0,8,0,0" />
-                                          <VerticalStackLayout x:Name="RequestTimelineLayout" Spacing="6" />
+                    <Label Text="Status Tracking" Style="{StaticResource StyleCardTitle}" Margin="0,4,0,0" />
+                    <VerticalStackLayout x:Name="StatusTimelineLayout" Spacing="8" />
 
-                                          <Label Text="Service Feedback" FontSize="15" FontAttributes="Bold" Margin="0,8,0,0" />
-                                          <Label x:Name="CustomerFeedbackHintLabel"
-                                                 FontSize="12"
-                                                 TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                          <Picker x:Name="CustomerFeedbackTypePicker" Title="Select feedback category" />
-                                          <Picker x:Name="CustomerRatingPicker" Title="Select rating" />
-                                          <Editor x:Name="CustomerFeedbackCommentEditor"
-                                                  Placeholder="Share what went well or what needs improvement"
-                                                  AutoSize="TextChanges"
-                                                  MaxLength="1000"
-                                                  HeightRequest="90" />
-                                          <Button x:Name="SubmitCustomerFeedbackButton"
-                                                  Text="Submit Feedback"
-                                                  Clicked="OnSubmitCustomerFeedbackClicked" />
-                                          <Label x:Name="CustomerFeedbackStatusLabel"
-                                                 FontSize="12"
-                                                 TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                   </VerticalStackLayout>
-                            </Border>
-                     </VerticalStackLayout>
-              </ScrollView>
-       </Grid>
+                    <Label Text="Activity Timeline" Style="{StaticResource StyleCardTitle}" Margin="0,8,0,0" />
+                    <VerticalStackLayout x:Name="RequestTimelineLayout" Spacing="8" />
+
+                    <Label Text="Service Feedback" Style="{StaticResource StyleCardTitle}" Margin="0,8,0,0" />
+                    <Label x:Name="CustomerFeedbackHintLabel" Style="{StaticResource StyleMutedText}" />
+                    <Picker x:Name="CustomerFeedbackTypePicker" Title="Select feedback category" />
+                    <Picker x:Name="CustomerRatingPicker" Title="Select rating" />
+                    <Editor x:Name="CustomerFeedbackCommentEditor"
+                            Placeholder="Share what went well or what needs improvement"
+                            AutoSize="TextChanges"
+                            MaxLength="1000"
+                            HeightRequest="100" />
+                    <Button x:Name="SubmitCustomerFeedbackButton"
+                            Text="Submit Feedback"
+                            Clicked="OnSubmitCustomerFeedbackClicked" />
+                    <Label x:Name="CustomerFeedbackStatusLabel" Style="{StaticResource StyleCaption}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

@@ -3,83 +3,74 @@
     x:Class="GTEK.FSM.MobileApp.Pages.Auth.AuthPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Sign In"
-    BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgPageLight}, Dark={StaticResource ColorBgPageDark}}">
+    Title="Sign In">
 
     <ScrollView>
-        <VerticalStackLayout Padding="24,40" Spacing="18">
-            <VerticalStackLayout Spacing="6">
-                <Label Text="GTEK FSM"
-                       FontSize="14"
-                       TextColor="{AppThemeBinding Light={StaticResource ColorAccentLight}, Dark={StaticResource ColorAccentDark}}" />
-                <Label Text="Local access"
-                       FontSize="30"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource ColorTextPrimaryLight}, Dark={StaticResource ColorTextPrimaryDark}}" />
-                <Label Text="Sign in with a demo account or register a customer account in the baseline tenant."
-                       FontSize="14"
-                      TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                  <Label x:Name="ApiTargetLabel"
-                      FontSize="12"
-                      TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-            </VerticalStackLayout>
-
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                <Button x:Name="LoginModeButton"
-                        Text="Login"
-                        Clicked="OnLoginModeClicked" />
-                <Button x:Name="RegisterModeButton"
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}" Spacing="20">
+            <Grid ColumnDefinitions="*,48" ColumnSpacing="12">
+                <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                    <Label Text="GTEK FSM" Style="{StaticResource StyleEyebrow}" />
+                    <Label Text="Local access" Style="{StaticResource StylePageTitle}" />
+                    <Label Text="Sign in with a demo account or register a customer account in the baseline tenant."
+                           Style="{StaticResource StylePageSubtitle}" />
+                    <Label x:Name="ApiTargetLabel" Style="{StaticResource StyleCaption}" />
+                </VerticalStackLayout>
+                <Button x:Name="ThemeIconButton"
                         Grid.Column="1"
-                        Text="Register"
-                        Clicked="OnRegisterModeClicked" />
+                        Text="☾"
+                        Style="{StaticResource StyleIconButton}"
+                        Clicked="OnToggleThemeClicked" />
             </Grid>
+
+            <Border Style="{StaticResource StyleSoftPanel}" Padding="4">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                    <Button x:Name="LoginModeButton"
+                            Text="Login"
+                            Clicked="OnLoginModeClicked" />
+                    <Button x:Name="RegisterModeButton"
+                            Grid.Column="1"
+                            Text="Register"
+                            Clicked="OnRegisterModeClicked" />
+                </Grid>
+            </Border>
 
             <Label x:Name="ErrorLabel"
                    IsVisible="False"
-                   FontSize="13"
+                   FontSize="{StaticResource FontSizeBodySmall}"
                    TextColor="{AppThemeBinding Light={StaticResource ColorStatusErrorLight}, Dark={StaticResource ColorStatusErrorDark}}" />
 
-            <VerticalStackLayout x:Name="RegisterFieldsLayout" IsVisible="False" Spacing="12">
-                <Label Text="Display Name"
-                       FontSize="13"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
-                <Entry x:Name="DisplayNameEntry" Placeholder="Customer Name" />
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout x:Name="RegisterFieldsLayout" IsVisible="False" Spacing="8">
+                        <Label Text="Display Name" Style="{StaticResource StyleFieldLabel}" />
+                        <Entry x:Name="DisplayNameEntry" Placeholder="Customer name" />
 
-                <Label Text="Tenant Code"
-                       FontSize="13"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
-                <Entry x:Name="TenantCodeEntry" Placeholder="REF-BASELINE" Text="REF-BASELINE" />
-            </VerticalStackLayout>
+                        <Label Text="Tenant Code" Style="{StaticResource StyleFieldLabel}" Margin="0,4,0,0" />
+                        <Entry x:Name="TenantCodeEntry" Placeholder="REF-BASELINE" Text="REF-BASELINE" />
+                    </VerticalStackLayout>
 
-            <VerticalStackLayout Spacing="12">
-                <Label Text="Email"
-                       FontSize="13"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
-                <Entry x:Name="EmailEntry" Keyboard="Email" Placeholder="name@example.com" />
+                    <Label Text="Email" Style="{StaticResource StyleFieldLabel}" />
+                    <Entry x:Name="EmailEntry" Keyboard="Email" Placeholder="name@example.com" />
 
-                <Label Text="Password"
-                       FontSize="13"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource ColorTextSecondaryLight}, Dark={StaticResource ColorTextSecondaryDark}}" />
-                <Entry x:Name="PasswordEntry" IsPassword="True" Placeholder="Password" />
-            </VerticalStackLayout>
+                    <Label Text="Password" Style="{StaticResource StyleFieldLabel}" Margin="0,4,0,0" />
+                    <Entry x:Name="PasswordEntry" IsPassword="True" Placeholder="Password" />
 
-            <Button x:Name="SubmitButton"
-                    Text="Sign In"
-                    Clicked="OnSubmitClicked" />
-
-            <Frame Padding="18" CornerRadius="18" BorderColor="Transparent" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Demo accounts" FontAttributes="Bold" />
-                    <Label Text="customer@gtek.local / Customer@123" FontSize="13" />
-                    <Label Text="worker@gtek.local / Worker@123" FontSize="13" />
-                    <Label Text="support@gtek.local / Support@123" FontSize="13" />
-                    <Label Text="shamilsuraweera@gmail.com / Admin@123" FontSize="13" />
+                    <Button x:Name="SubmitButton"
+                            Text="Sign In"
+                            Margin="0,8,0,0"
+                            Clicked="OnSubmitClicked" />
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
+
+            <Border Style="{StaticResource StyleCardBorder}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Demo accounts" Style="{StaticResource StyleCardTitle}" />
+                    <Label Text="customer@gtek.local / Customer@123" Style="{StaticResource StyleCaption}" />
+                    <Label Text="worker@gtek.local / Worker@123" Style="{StaticResource StyleCaption}" />
+                    <Label Text="support@gtek.local / Support@123" Style="{StaticResource StyleCaption}" />
+                    <Label Text="shamilsuraweera@gmail.com / Admin@123" Style="{StaticResource StyleCaption}" />
+                </VerticalStackLayout>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

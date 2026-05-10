@@ -130,8 +130,28 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
     {
         if (e.CurrentSelection?.FirstOrDefault() is WorkerJobViewModel selected)
         {
+            _ = JobsCollectionView.ScaleTo(0.995, 70);
+            _ = JobsCollectionView.ScaleTo(1, 120);
             RenderSelectedJob(selected);
             _ = LoadSelectedJobExecutionContextAsync(selected);
+        }
+    }
+
+    private async void OnOpenJobFiltersClicked(object sender, EventArgs e)
+    {
+        var selected = await DisplayActionSheetAsync(
+            "Filter jobs",
+            "Cancel",
+            null,
+            "All jobs",
+            "High priority",
+            "Assigned",
+            "In progress",
+            "Completed");
+
+        if (!string.IsNullOrWhiteSpace(selected) && selected != "Cancel")
+        {
+            await DisplayAlertAsync("Filter", $"{selected} filter selected.", "OK");
         }
     }
 

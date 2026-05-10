@@ -3,22 +3,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.SettingsPage"
              Title="Settings">
-       <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,24" Spacing="12">
-                     <Label Text="Settings" FontSize="28" FontAttributes="Bold" />
-                     <Label Text="The worker settings view now follows the same simplified white/orange/slate presentation."
-                               TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="WORKER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="Settings" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Account actions remain clear, high-contrast, and safe to use in the field."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-                     <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                            <VerticalStackLayout Spacing="10">
-                                   <Label Text="Account" FontSize="18" FontAttributes="Bold" />
-                                   <Label Text="Additional options can be layered in later without changing the simplified visual system."
-                                             TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                   <Button Text="Log Out"
-                                                 Margin="0,8,0,0"
-                                                 Clicked="OnLogoutClicked" />
-                            </VerticalStackLayout>
-                     </Border>
-              </VerticalStackLayout>
-       </ScrollView>
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Account" Style="{StaticResource StyleSectionHeader}" />
+                    <Label Text="Additional options can be added later without changing the shared surface and action patterns."
+                           Style="{StaticResource StyleMutedText}" />
+                    <Button Text="Log Out"
+                            Style="{StaticResource StyleDangerButton}"
+                            Margin="0,8,0,0"
+                            Clicked="OnLogoutClicked" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

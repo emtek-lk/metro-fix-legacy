@@ -3,19 +3,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.ProfilePage"
              Title="Profile">
-       <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,24" Spacing="12">
-                     <Label Text="Profile" FontSize="28" FontAttributes="Bold" />
-                     <Label Text="Worker profile screens will stay sparse and readable, matching the simplified theme." 
-                               TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="WORKER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="Profile" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Worker profile screens stay sparse, readable, and consistent with the field workflow."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-                     <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                            <VerticalStackLayout Spacing="10">
-                                   <Label Text="Coming Soon" FontSize="18" FontAttributes="Bold" />
-                                   <Label Text="This placeholder now reflects the same calmer surface treatment used throughout the app."
-                                             TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                            </VerticalStackLayout>
-                     </Border>
-              </VerticalStackLayout>
-       </ScrollView>
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Border Style="{StaticResource StyleAccentPill}" HorizontalOptions="Start">
+                        <Label Text="COMING SOON" Style="{StaticResource StylePillLabel}" />
+                    </Border>
+                    <Label Text="Profile workspace" Style="{StaticResource StyleSectionHeader}" />
+                    <Label Text="This surface is ready for certifications, availability, contact preferences, and dispatch profile controls."
+                           Style="{StaticResource StyleMutedText}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

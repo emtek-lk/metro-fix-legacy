@@ -20,6 +20,7 @@ public partial class AuthPage : ContentPage
         this.tokenProvider = tokenProvider;
         this.ApiTargetLabel.Text = $"API target: {this.endpointConfiguration.ApiBaseUrl}";
         this.ApplyMode();
+        this.UpdateThemeIcon();
     }
 
     private void OnLoginModeClicked(object? sender, EventArgs e)
@@ -109,5 +110,19 @@ public partial class AuthPage : ContentPage
         this.LoginModeButton.TextColor = this.isRegisterMode ? inactiveText : activeText;
         this.RegisterModeButton.BackgroundColor = this.isRegisterMode ? activeBackground : inactiveBackground;
         this.RegisterModeButton.TextColor = this.isRegisterMode ? activeText : inactiveText;
+    }
+
+    private void OnToggleThemeClicked(object? sender, EventArgs e)
+    {
+        var currentTheme = Application.Current?.UserAppTheme ?? AppTheme.Unspecified;
+        Application.Current!.UserAppTheme = currentTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
+        this.UpdateThemeIcon();
+        this.ApplyMode();
+    }
+
+    private void UpdateThemeIcon()
+    {
+        var currentTheme = Application.Current?.UserAppTheme ?? AppTheme.Unspecified;
+        this.ThemeIconButton.Text = currentTheme == AppTheme.Dark ? "☀" : "☾";
     }
 }

@@ -3,22 +3,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.SettingsPage"
              Title="Settings">
-       <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,24" Spacing="12">
-                     <Label Text="Settings" FontSize="28" FontAttributes="Bold" />
-                     <Label Text="A simplified settings surface keeps only core account actions visible for now."
-                               TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="CUSTOMER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="Settings" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Core account actions are grouped clearly while advanced preferences remain out of the way."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-                     <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                            <VerticalStackLayout Spacing="10">
-                                   <Label Text="Account" FontSize="18" FontAttributes="Bold" />
-                                   <Label Text="Theme and additional preferences will be added later without changing this cleaner base layout."
-                                             TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                   <Button Text="Log Out"
-                                                 Margin="0,8,0,0"
-                                                 Clicked="OnLogoutClicked" />
-                            </VerticalStackLayout>
-                     </Border>
-              </VerticalStackLayout>
-       </ScrollView>
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Account" Style="{StaticResource StyleSectionHeader}" />
+                    <Label Text="Theme and additional preferences can layer into this surface without changing the mobile design system."
+                           Style="{StaticResource StyleMutedText}" />
+                    <Button Text="Log Out"
+                            Style="{StaticResource StyleDangerButton}"
+                            Margin="0,8,0,0"
+                            Clicked="OnLogoutClicked" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

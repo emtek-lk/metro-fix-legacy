@@ -115,8 +115,28 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
     {
         if (e.CurrentSelection?.FirstOrDefault() is CustomerRequestViewModel request)
         {
+            _ = RequestsCollectionView.ScaleTo(0.995, 70);
+            _ = RequestsCollectionView.ScaleTo(1, 120);
             RenderRequestDetail(request);
             _ = LoadSelectedRequestDetailAsync(request);
+        }
+    }
+
+    private async void OnOpenRequestFiltersClicked(object sender, EventArgs e)
+    {
+        var selected = await DisplayActionSheetAsync(
+            "Filter requests",
+            "Cancel",
+            null,
+            "All requests",
+            "Open",
+            "In progress",
+            "Pending approval",
+            "Closed");
+
+        if (!string.IsNullOrWhiteSpace(selected) && selected != "Cancel")
+        {
+            await DisplayAlertAsync("Filter", $"{selected} filter selected.", "OK");
         }
     }
 
@@ -140,26 +160,20 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         for (var index = 0; index < stageLabels.Length; index++)
         {
             var isComplete = index <= request.CurrentStage;
-            var marker = isComplete ? "●" : "○";
             var color = isComplete
-                ? Color.FromArgb("#F38808")
-                : Color.FromArgb("#6F7E8D");
+                ? ResolveThemeColor("ColorAccentLight", "ColorAccentDark", "#F38808", "#F7A642")
+                : ResolveThemeColor("ColorTextMutedLight", "ColorTextMutedDark", "#64748B", "#9FB1C8");
 
-            StatusTimelineLayout.Children.Add(new Label
-            {
-                Text = $"{marker} {stageLabels[index]}",
-                TextColor = color,
-                FontAttributes = isComplete ? FontAttributes.Bold : FontAttributes.None,
-                FontSize = 14,
-            });
+            StatusTimelineLayout.Children.Add(BuildTimelineLabel(
+                text: $"{(isComplete ? "Completed" : "Pending")}: {stageLabels[index]}",
+                textColor: color,
+                emphasized: isComplete));
         }
 
-        RequestTimelineLayout.Children.Add(new Label
-        {
-            Text = "Loading activity timeline...",
-            FontSize = 12,
-            TextColor = Color.FromArgb("#6F7E8D"),
-        });
+            RequestTimelineLayout.Children.Add(BuildTimelineLabel(
+                "Loading activity timeline...",
+                ResolveThemeColor("ColorTextMutedLight", "ColorTextMutedDark", "#64748B", "#9FB1C8"),
+                emphasized: false));
     }
 
     private async void OnEscalateRequestClicked(object sender, EventArgs e)
@@ -461,24 +475,43 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
 
         if (timelineLines.Count == 0)
         {
-            RequestTimelineLayout.Children.Add(new Label
-            {
-                Text = "No additional activity yet.",
-                FontSize = 12,
-                TextColor = Color.FromArgb("#6F7E8D"),
-            });
+            RequestTimelineLayout.Children.Add(BuildTimelineLabel(
+                "No additional activity yet.",
+                ResolveThemeColor("ColorTextMutedLight", "ColorTextMutedDark", "#64748B", "#9FB1C8"),
+                emphasized: false));
             return;
         }
 
         foreach (var line in timelineLines)
         {
-            RequestTimelineLayout.Children.Add(new Label
-            {
-                Text = line,
-                FontSize = 12,
-                LineBreakMode = LineBreakMode.WordWrap,
-            });
+            RequestTimelineLayout.Children.Add(BuildTimelineLabel(
+                line,
+                ResolveThemeColor("ColorTextSecondaryLight", "ColorTextSecondaryDark", "#334155", "#CAD6E5"),
+                emphasized: false));
         }
+    }
+
+    private static Label BuildTimelineLabel(string text, Color textColor, bool emphasized)
+    {
+        return new Label
+        {
+            Text = text,
+            TextColor = textColor,
+            FontAttributes = emphasized ? FontAttributes.Bold : FontAttributes.None,
+            FontSize = 13,
+            LineBreakMode = LineBreakMode.WordWrap,
+        };
+    }
+
+    private static Color ResolveThemeColor(string lightKey, string darkKey, string lightFallback, string darkFallback)
+    {
+        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        var key = isDark ? darkKey : lightKey;
+        var fallback = isDark ? darkFallback : lightFallback;
+
+        return Application.Current?.Resources.TryGetValue(key, out var resource) == true && resource is Color color
+            ? color
+            : Color.FromArgb(fallback);
     }
 
     private static int ResolveStageIndex(string stage)
