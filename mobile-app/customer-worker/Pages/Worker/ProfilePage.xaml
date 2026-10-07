@@ -1,21 +1,48 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.ProfilePage"
              Title="Profile">
-       <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,24" Spacing="12">
-                     <Label Text="Profile" FontSize="28" FontAttributes="Bold" />
-                     <Label Text="Worker profile screens will stay sparse and readable, matching the simplified theme." 
-                               TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="WORKER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="Profile" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Worker profile screens stay sparse, readable, and consistent with the field workflow."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-                     <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                            <VerticalStackLayout Spacing="10">
-                                   <Label Text="Coming Soon" FontSize="18" FontAttributes="Bold" />
-                                   <Label Text="This placeholder now reflects the same calmer surface treatment used throughout the app."
-                                             TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                            </VerticalStackLayout>
-                     </Border>
-              </VerticalStackLayout>
-       </ScrollView>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Border Style="{StaticResource StyleMetricCard}">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Completion" Style="{StaticResource StyleCaption}" />
+                        <Label Text="94%" FontSize="24" FontFamily="{StaticResource FontFamilySemibold}" />
+                        <Label Text="This week" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource StyleMetricCard}">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Response" Style="{StaticResource StyleCaption}" />
+                        <Label Text="18m" FontSize="24" FontFamily="{StaticResource FontFamilySemibold}" />
+                        <Label Text="Average" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Border Style="{StaticResource StyleAccentPill}" HorizontalOptions="Start">
+                        <Label Text="COMING SOON" Style="{StaticResource StylePillLabel}" />
+                    </Border>
+                    <Label Text="Profile workspace" Style="{StaticResource StyleSectionHeader}" />
+                    <Label Text="This surface is ready for certifications, availability, contact preferences, and dispatch profile controls."
+                           Style="{StaticResource StyleMutedText}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Worker" ActiveItem="Profile" />
+    </Grid>
 </ContentPage>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="GTEK.FSM.MobileApp.Controls.RoleBottomNavigationBar"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Border Style="{StaticResource StyleBottomNavigation}">
+        <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="4">
+            <VerticalStackLayout x:Name="FirstItem" Spacing="2" HorizontalOptions="Center">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnFirstTapped" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Label x:Name="FirstIcon" HorizontalTextAlignment="Center" FontSize="20" />
+                <Label x:Name="FirstLabel" HorizontalTextAlignment="Center" FontSize="{StaticResource FontSizeTiny}" FontFamily="{StaticResource FontFamilySemibold}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout x:Name="SecondItem" Grid.Column="1" Spacing="2" HorizontalOptions="Center">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSecondTapped" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Label x:Name="SecondIcon" HorizontalTextAlignment="Center" FontSize="20" />
+                <Label x:Name="SecondLabel" HorizontalTextAlignment="Center" FontSize="{StaticResource FontSizeTiny}" FontFamily="{StaticResource FontFamilySemibold}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout x:Name="ThirdItem" Grid.Column="2" Spacing="2" HorizontalOptions="Center">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnThirdTapped" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Label x:Name="ThirdIcon" HorizontalTextAlignment="Center" FontSize="20" />
+                <Label x:Name="ThirdLabel" HorizontalTextAlignment="Center" FontSize="{StaticResource FontSizeTiny}" FontFamily="{StaticResource FontFamilySemibold}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout x:Name="FourthItem" Grid.Column="3" Spacing="2" HorizontalOptions="Center">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnFourthTapped" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Grid HorizontalOptions="Center">
+                    <Label x:Name="FourthIcon" HorizontalTextAlignment="Center" FontSize="20" />
+                    <Border x:Name="NotificationBadge"
+                            WidthRequest="8"
+                            HeightRequest="8"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 999"
+                            HorizontalOptions="End"
+                            VerticalOptions="Start"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource ColorStatusErrorLight}, Dark={StaticResource ColorStatusErrorDark}}" />
+                </Grid>
+                <Label x:Name="FourthLabel" HorizontalTextAlignment="Center" FontSize="{StaticResource FontSizeTiny}" FontFamily="{StaticResource FontFamilySemibold}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout x:Name="FifthItem" Grid.Column="4" Spacing="2" HorizontalOptions="Center">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnFifthTapped" />
+                </VerticalStackLayout.GestureRecognizers>
+                <Label x:Name="FifthIcon" HorizontalTextAlignment="Center" FontSize="20" />
+                <Label x:Name="FifthLabel" HorizontalTextAlignment="Center" FontSize="{StaticResource FontSizeTiny}" FontFamily="{StaticResource FontFamilySemibold}" />
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>

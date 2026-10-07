@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "GTEK.FSM.MobileApp": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    },
     "Windows Machine": {
       "commandName": "MsixPackage",
       "nativeDebugging": false

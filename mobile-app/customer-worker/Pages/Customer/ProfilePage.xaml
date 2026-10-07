@@ -1,35 +1,65 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.ProfilePage"
              Title="Profile">
-       <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,24" Spacing="12">
-                     <Label Text="Profile" FontSize="28" FontAttributes="Bold" />
-                     <Label Text="Keep your contact details updated for dispatch and support communication."
-                               TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="CUSTOMER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="Profile" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Keep your contact details updated for dispatch and support communication."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-                     <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                            <VerticalStackLayout Spacing="10">
-                                   <Label Text="Full Name" FontAttributes="Bold" FontSize="12" />
-                                   <Entry x:Name="FullNameEntry" Placeholder="Enter full name" />
+            <Border Style="{StaticResource StyleStatusStrip}">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8">
+                    <Label Text="Profile completion" Style="{StaticResource StyleFieldLabel}" />
+                    <Border Grid.Column="1" Style="{StaticResource StyleSuccessPill}">
+                        <Label Text="82%"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               FontSize="{StaticResource FontSizeTiny}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                    </Border>
+                    <ProgressBar Grid.Row="1" Grid.ColumnSpan="2" Progress="0.82" HeightRequest="5" />
+                    <Label Grid.Row="2" Grid.ColumnSpan="2" Text="Add emergency contact and preferred access notes to speed up dispatch." Style="{StaticResource StyleCaption}" />
+                </Grid>
+            </Border>
 
-                                   <Label Text="Phone" FontAttributes="Bold" FontSize="12" />
-                                   <Entry x:Name="PhoneEntry" Placeholder="Enter phone number" Keyboard="Telephone" />
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Contact Details" Style="{StaticResource StyleSectionHeader}" />
 
-                                   <Label Text="Email" FontAttributes="Bold" FontSize="12" />
-                                   <Entry x:Name="EmailEntry" Placeholder="Enter email address" Keyboard="Email" />
+                    <Label Text="Full Name" Style="{StaticResource StyleFieldLabel}" />
+                    <Entry x:Name="FullNameEntry" Placeholder="Enter full name" />
 
-                                   <Label Text="Address" FontAttributes="Bold" FontSize="12" />
-                                   <Editor x:Name="AddressEditor" Placeholder="Enter service address" AutoSize="TextChanges" />
+                    <Label Text="Phone" Style="{StaticResource StyleFieldLabel}" />
+                    <Entry x:Name="PhoneEntry" Placeholder="Enter phone number" Keyboard="Telephone" />
 
-                                   <Label Text="Preferred Contact" FontAttributes="Bold" FontSize="12" />
-                                   <Picker x:Name="PreferredContactPicker" Title="Select contact method" />
+                    <Label Text="Email" Style="{StaticResource StyleFieldLabel}" />
+                    <Entry x:Name="EmailEntry" Placeholder="Enter email address" Keyboard="Email" />
 
-                                   <Button Text="Save Profile" Margin="0,8,0,0" Clicked="OnSaveProfileClicked" />
-                                   <Label x:Name="SaveStatusLabel" FontSize="12" TextColor="{AppThemeBinding Light=#166534, Dark=#86EFAC}" />
-                            </VerticalStackLayout>
-                     </Border>
-              </VerticalStackLayout>
-       </ScrollView>
+                    <Label Text="Address" Style="{StaticResource StyleFieldLabel}" />
+                    <Editor x:Name="AddressEditor"
+                            Placeholder="Enter service address"
+                            AutoSize="TextChanges"
+                            HeightRequest="96" />
+
+                    <Label Text="Preferred Contact" Style="{StaticResource StyleFieldLabel}" />
+                    <Picker x:Name="PreferredContactPicker" Title="Select contact method" />
+
+                    <Button Text="Save Profile"
+                            Margin="0,8,0,0"
+                            Clicked="OnSaveProfileClicked" />
+                    <Label x:Name="SaveStatusLabel"
+                           Style="{StaticResource StyleCaption}"
+                           TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Customer" ActiveItem="Profile" />
+    </Grid>
 </ContentPage>

@@ -87,8 +87,15 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
         _realtimeClient = Application.Current?.Handler?.MauiContext?.Services?.GetService<IMobileOperationalRealtimeClient>();
         if (_realtimeClient is not null)
         {
+            _realtimeClient.ConnectionStateChanged += OnRealtimeConnectionStateChanged;
             _assignmentSubscription = _realtimeClient.SubscribeToAssignmentUpdates(HandleAssignmentUpdateAsync);
             _ = _realtimeClient.EnsureConnectedAsync();
+            UpdateRealtimeStatus(_realtimeClient.ConnectionState);
+        }
+        else
+        {
+            JobSyncStatusLabel.Text = "Realtime unavailable";
+            JobSyncPillLabel.Text = "OFF";
         }
 
         _ = LoadLiveJobsAsync();
@@ -108,6 +115,11 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
 
     public void Dispose()
     {
+        if (_realtimeClient is not null)
+        {
+            _realtimeClient.ConnectionStateChanged -= OnRealtimeConnectionStateChanged;
+        }
+
         _assignmentSubscription?.Dispose();
     }
 
@@ -130,8 +142,30 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
     {
         if (e.CurrentSelection?.FirstOrDefault() is WorkerJobViewModel selected)
         {
+            _ = JobsCollectionView.ScaleTo(0.995, 70);
+            _ = JobsCollectionView.ScaleTo(1, 120);
             RenderSelectedJob(selected);
             _ = LoadSelectedJobExecutionContextAsync(selected);
+        }
+    }
+
+    private async void OnOpenJobFiltersClicked(object sender, EventArgs e)
+    {
+        var selected = await DisplayActionSheetAsync(
+            "Filter jobs",
+            "Cancel",
+            null,
+            "All jobs",
+            "High priority",
+            "Assigned",
+            "In progress",
+            "Completed");
+
+        if (!string.IsNullOrWhiteSpace(selected) && selected != "Cancel")
+        {
+            ActiveJobFilterLabel.Text = selected;
+            await ActiveJobFilterLabel.FadeTo(0.35, 70);
+            await ActiveJobFilterLabel.FadeTo(1, 120);
         }
     }
 
@@ -239,6 +273,13 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
         await ApplyTransitionAsync("InProgress", "Work resumed");
     }
 
+    private async void OnUpdateJobFabClicked(object sender, EventArgs e)
+    {
+        await ((VisualElement)sender).ScaleTo(0.92, 70, Easing.CubicOut);
+        await ((VisualElement)sender).ScaleTo(1, 120, Easing.CubicIn);
+        await ApplyTransitionAsync("InProgress", "Quick status update published");
+    }
+
     private void RenderSelectedJob(WorkerJobViewModel selected)
     {
         _selectedJob = selected;
@@ -249,6 +290,7 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
         StatusPicker.SelectedItem = WorkerJobJourney.ToApiStatus(selected.StatusLabel);
         StatusResultLabel.Text ??= string.Empty;
         UpdateWorkerFeedbackAvailability(selected);
+        UpdateExecutionProgress(selected);
     }
 
     private static Color ResolveStatusColor(string status)
@@ -363,10 +405,11 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
 
             ReplaceJob(workingSelection, updated);
             StatusPicker.SelectedItem = WorkerJobJourney.ToApiStatus(transition.Transition.CurrentStatus);
-            StatusResultLabel.Text = WorkerJobJourney.BuildTransitionSuccessMessage(successMessage, updated.Id, DateTime.Now);
-            UpdateWorkerFeedbackAvailability(updated);
+        StatusResultLabel.Text = WorkerJobJourney.BuildTransitionSuccessMessage(successMessage, updated.Id, DateTime.Now);
+        UpdateWorkerFeedbackAvailability(updated);
+        UpdateExecutionProgress(updated);
 
-            await LoadLiveJobsAsync();
+        await LoadLiveJobsAsync();
         }
         finally
         {
@@ -474,6 +517,7 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
 
             ReplaceJob(target, updated);
             StatusResultLabel.Text = $"Live update: {updated.Id} is now {assignment.StatusLabel} ({payload.UpdatedAtUtc:t}).";
+            JobSyncStatusLabel.Text = $"Dispatch update received • {payload.UpdatedAtUtc:t}";
         });
 
         return Task.CompletedTask;
@@ -506,6 +550,78 @@ public partial class JobsPage : ContentPage, IDisposable, IQueryAttributable
             ? "Capture field-side feedback after completion so management can review quality and blockers."
             : "Worker feedback unlocks once the linked request reaches Completed.";
         WorkerFeedbackStatusLabel.Text ??= string.Empty;
+    }
+
+    private async void OnRefreshJobsWorkspace(object sender, EventArgs e)
+    {
+        JobSyncStatusLabel.Text = "Refreshing assigned jobs...";
+        await LoadLiveJobsAsync();
+        JobsRefreshView.IsRefreshing = false;
+        JobSyncStatusLabel.Text = $"Synced {DateTime.Now:t}";
+    }
+
+    private async void OnCheckInClicked(object sender, EventArgs e)
+    {
+        if (_selectedJob is null)
+        {
+            return;
+        }
+
+        FieldActionStatusLabel.Text = $"Checked in to {_selectedJob.Id} at {DateTime.Now:t}.";
+        await FieldActionStatusLabel.FadeTo(0.35, 70);
+        await FieldActionStatusLabel.FadeTo(1, 120);
+    }
+
+    private async void OnUploadProofClicked(object sender, EventArgs e)
+    {
+        ProofPhotoCheckBox.IsChecked = true;
+        FieldActionStatusLabel.Text = "Proof upload queued for sync.";
+        await FieldActionStatusLabel.FadeTo(0.35, 70);
+        await FieldActionStatusLabel.FadeTo(1, 120);
+    }
+
+    private void OnRealtimeConnectionStateChanged(MobileOperationalRealtimeConnectionState state)
+    {
+        MainThread.BeginInvokeOnMainThread(() => UpdateRealtimeStatus(state));
+    }
+
+    private void UpdateRealtimeStatus(MobileOperationalRealtimeConnectionState state)
+    {
+        JobSyncStatusLabel.Text = state switch
+        {
+            MobileOperationalRealtimeConnectionState.Connected => $"Live dispatch connected • {DateTime.Now:t}",
+            MobileOperationalRealtimeConnectionState.Connecting => "Connecting to dispatch...",
+            MobileOperationalRealtimeConnectionState.Reconnecting => "Reconnecting • field actions can retry",
+            MobileOperationalRealtimeConnectionState.AuthenticationRequired => "Session refresh required for dispatch sync",
+            MobileOperationalRealtimeConnectionState.Faulted => "Dispatch sync paused • pull to refresh",
+            _ => "Offline field mode • actions can be queued",
+        };
+
+        JobSyncPillLabel.Text = state == MobileOperationalRealtimeConnectionState.Connected ? "LIVE" : "SYNC";
+    }
+
+    private void UpdateExecutionProgress(WorkerJobViewModel selected)
+    {
+        var normalized = WorkerJobJourney.ToApiStatus(selected.StatusLabel);
+        var progress = normalized switch
+        {
+            "Completed" => 1,
+            "InProgress" => 0.72,
+            "OnHold" => 0.48,
+            "Assigned" => 0.36,
+            _ => selected.Accepted ? 0.3 : 0.18,
+        };
+
+        JobExecutionProgressBar.Progress = progress;
+        JobExecutionPillLabel.Text = normalized == "InProgress" ? "ACTIVE" : normalized.ToUpperInvariant();
+        JobExecutionHintLabel.Text = normalized switch
+        {
+            "Completed" => "Capture proof, submit feedback, and close the visit.",
+            "InProgress" => "Work is active. Complete the checklist before completion.",
+            "OnHold" => "Job is paused. Resume when blockers are cleared.",
+            "Assigned" => "Assignment accepted. Check in when you arrive on site.",
+            _ => "Accept the assignment to begin the field workflow.",
+        };
     }
 
     private static bool IsCompletedStatus(string? status)

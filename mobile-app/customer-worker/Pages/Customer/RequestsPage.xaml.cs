@@ -77,8 +77,15 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         _realtimeClient = Application.Current?.Handler?.MauiContext?.Services?.GetService<IMobileOperationalRealtimeClient>();
         if (_realtimeClient is not null)
         {
+            _realtimeClient.ConnectionStateChanged += OnRealtimeConnectionStateChanged;
             _statusSubscription = _realtimeClient.SubscribeToStatusUpdates(HandleStatusUpdateAsync);
             _ = _realtimeClient.EnsureConnectedAsync();
+            UpdateRealtimeStatus(_realtimeClient.ConnectionState);
+        }
+        else
+        {
+            RequestSyncStatusLabel.Text = "Realtime unavailable";
+            RequestSyncPillLabel.Text = "OFF";
         }
 
         _ = LoadLiveRequestsAsync();
@@ -99,6 +106,11 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
 
     public void Dispose()
     {
+        if (_realtimeClient is not null)
+        {
+            _realtimeClient.ConnectionStateChanged -= OnRealtimeConnectionStateChanged;
+        }
+
         _statusSubscription?.Dispose();
     }
 
@@ -115,8 +127,30 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
     {
         if (e.CurrentSelection?.FirstOrDefault() is CustomerRequestViewModel request)
         {
+            _ = RequestsCollectionView.ScaleTo(0.995, 70);
+            _ = RequestsCollectionView.ScaleTo(1, 120);
             RenderRequestDetail(request);
             _ = LoadSelectedRequestDetailAsync(request);
+        }
+    }
+
+    private async void OnOpenRequestFiltersClicked(object sender, EventArgs e)
+    {
+        var selected = await DisplayActionSheetAsync(
+            "Filter requests",
+            "Cancel",
+            null,
+            "All requests",
+            "Open",
+            "In progress",
+            "Pending approval",
+            "Closed");
+
+        if (!string.IsNullOrWhiteSpace(selected) && selected != "Cancel")
+        {
+            ActiveRequestFilterLabel.Text = selected;
+            await ActiveRequestFilterLabel.FadeTo(0.35, 70);
+            await ActiveRequestFilterLabel.FadeTo(1, 120);
         }
     }
 
@@ -130,6 +164,7 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         SelectedRequestWorkerLabel.Text = "Assigned worker: checking detail...";
         SelectedRequestJobLabel.Text = "Active job: checking detail...";
         SelectedRequestUpdatedLabel.Text = string.Empty;
+        TechnicianTrustLabel.Text = "Assigned technician details will appear after dispatch confirms the visit.";
         _selectedRequestActiveJobId = string.Empty;
         UpdateCustomerFeedbackAvailability(request.StatusLabel);
 
@@ -140,26 +175,20 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         for (var index = 0; index < stageLabels.Length; index++)
         {
             var isComplete = index <= request.CurrentStage;
-            var marker = isComplete ? "●" : "○";
             var color = isComplete
-                ? Color.FromArgb("#F38808")
-                : Color.FromArgb("#6F7E8D");
+                ? ResolveThemeColor("ColorAccentLight", "ColorAccentDark", "#F38808", "#F7A642")
+                : ResolveThemeColor("ColorTextMutedLight", "ColorTextMutedDark", "#64748B", "#9FB1C8");
 
-            StatusTimelineLayout.Children.Add(new Label
-            {
-                Text = $"{marker} {stageLabels[index]}",
-                TextColor = color,
-                FontAttributes = isComplete ? FontAttributes.Bold : FontAttributes.None,
-                FontSize = 14,
-            });
+            StatusTimelineLayout.Children.Add(BuildTimelineLabel(
+                text: $"{(isComplete ? "Completed" : "Pending")}: {stageLabels[index]}",
+                textColor: color,
+                emphasized: isComplete));
         }
 
-        RequestTimelineLayout.Children.Add(new Label
-        {
-            Text = "Loading activity timeline...",
-            FontSize = 12,
-            TextColor = Color.FromArgb("#6F7E8D"),
-        });
+            RequestTimelineLayout.Children.Add(BuildTimelineLabel(
+                "Loading activity timeline...",
+                ResolveThemeColor("ColorTextMutedLight", "ColorTextMutedDark", "#64748B", "#9FB1C8"),
+                emphasized: false));
     }
 
     private async void OnEscalateRequestClicked(object sender, EventArgs e)
@@ -367,6 +396,14 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         }
     }
 
+    private async void OnCreateRequestFabClicked(object sender, EventArgs e)
+    {
+        await ((VisualElement)sender).ScaleTo(0.92, 70, Easing.CubicOut);
+        await ((VisualElement)sender).ScaleTo(1, 120, Easing.CubicIn);
+        RequestDetailsEditor.Focus();
+        CreateRequestFeedbackLabel.Text = "Ready when you are. Add the issue details and submit.";
+    }
+
     private void EnsureCreatedRequestVisible(CreateServiceRequestResponse createdRequest)
     {
         var existing = _requests.FirstOrDefault(item => string.Equals(item.Id, createdRequest.RequestId, StringComparison.Ordinal));
@@ -450,9 +487,61 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
         SelectedRequestWorkerLabel.Text = presentation.WorkerText;
         SelectedRequestJobLabel.Text = presentation.JobText;
         SelectedRequestUpdatedLabel.Text = presentation.UpdatedText;
+        TechnicianTrustLabel.Text = string.IsNullOrWhiteSpace(presentation.WorkerText)
+            ? "Technician assignment is still pending."
+            : $"{presentation.WorkerText}. ETA and arrival confidence will update live.";
         UpdateCustomerFeedbackAvailability(syncedRequest.StatusLabel);
 
         RenderTimeline(presentation.TimelineLines);
+    }
+
+    private async void OnRefreshRequestCenter(object sender, EventArgs e)
+    {
+        RequestSyncStatusLabel.Text = "Refreshing requests and categories...";
+        await LoadLiveRequestsAsync();
+        await LoadCategoriesAsync();
+        RequestRefreshView.IsRefreshing = false;
+        RequestSyncStatusLabel.Text = $"Synced {DateTime.Now:t}";
+    }
+
+    private async void OnApproveSelectedQuoteClicked(object sender, EventArgs e)
+    {
+        if (_selectedRequest is null)
+        {
+            return;
+        }
+
+        await DisplayAlertAsync("Approval", $"Quote approval pathway opened for {_selectedRequest.Id}.", "OK");
+    }
+
+    private async void OnRejectSelectedQuoteClicked(object sender, EventArgs e)
+    {
+        if (_selectedRequest is null)
+        {
+            return;
+        }
+
+        await DisplayAlertAsync("Approval", $"Quote rejection pathway opened for {_selectedRequest.Id}.", "OK");
+    }
+
+    private void OnRealtimeConnectionStateChanged(MobileOperationalRealtimeConnectionState state)
+    {
+        MainThread.BeginInvokeOnMainThread(() => UpdateRealtimeStatus(state));
+    }
+
+    private void UpdateRealtimeStatus(MobileOperationalRealtimeConnectionState state)
+    {
+        RequestSyncStatusLabel.Text = state switch
+        {
+            MobileOperationalRealtimeConnectionState.Connected => $"Live updates connected • {DateTime.Now:t}",
+            MobileOperationalRealtimeConnectionState.Connecting => "Connecting to live updates...",
+            MobileOperationalRealtimeConnectionState.Reconnecting => "Reconnecting • actions will refresh shortly",
+            MobileOperationalRealtimeConnectionState.AuthenticationRequired => "Session refresh required for live updates",
+            MobileOperationalRealtimeConnectionState.Faulted => "Live updates paused • pull to refresh",
+            _ => "Offline mode • showing cached request data",
+        };
+
+        RequestSyncPillLabel.Text = state == MobileOperationalRealtimeConnectionState.Connected ? "LIVE" : "SYNC";
     }
 
     private void RenderTimeline(IReadOnlyList<string> timelineLines)
@@ -461,24 +550,43 @@ public partial class RequestsPage : ContentPage, IDisposable, IQueryAttributable
 
         if (timelineLines.Count == 0)
         {
-            RequestTimelineLayout.Children.Add(new Label
-            {
-                Text = "No additional activity yet.",
-                FontSize = 12,
-                TextColor = Color.FromArgb("#6F7E8D"),
-            });
+            RequestTimelineLayout.Children.Add(BuildTimelineLabel(
+                "No additional activity yet.",
+                ResolveThemeColor("ColorTextMutedLight", "ColorTextMutedDark", "#64748B", "#9FB1C8"),
+                emphasized: false));
             return;
         }
 
         foreach (var line in timelineLines)
         {
-            RequestTimelineLayout.Children.Add(new Label
-            {
-                Text = line,
-                FontSize = 12,
-                LineBreakMode = LineBreakMode.WordWrap,
-            });
+            RequestTimelineLayout.Children.Add(BuildTimelineLabel(
+                line,
+                ResolveThemeColor("ColorTextSecondaryLight", "ColorTextSecondaryDark", "#334155", "#CAD6E5"),
+                emphasized: false));
         }
+    }
+
+    private static Label BuildTimelineLabel(string text, Color textColor, bool emphasized)
+    {
+        return new Label
+        {
+            Text = text,
+            TextColor = textColor,
+            FontAttributes = emphasized ? FontAttributes.Bold : FontAttributes.None,
+            FontSize = 13,
+            LineBreakMode = LineBreakMode.WordWrap,
+        };
+    }
+
+    private static Color ResolveThemeColor(string lightKey, string darkKey, string lightFallback, string darkFallback)
+    {
+        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        var key = isDark ? darkKey : lightKey;
+        var fallback = isDark ? darkFallback : lightFallback;
+
+        return Application.Current?.Resources.TryGetValue(key, out var resource) == true && resource is Color color
+            ? color
+            : Color.FromArgb(fallback);
     }
 
     private static int ResolveStageIndex(string stage)
