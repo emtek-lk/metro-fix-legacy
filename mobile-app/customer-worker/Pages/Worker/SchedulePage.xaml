@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
+             x:Class="GTEK.FSM.MobileApp.Pages.Worker.SchedulePage"
+             Title="Schedule">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+                <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                    <Label Text="WORKER" Style="{StaticResource StyleEyebrow}" />
+                    <Label Text="Daily Schedule" Style="{StaticResource StylePageTitle}" />
+                    <Label Text="Route-aware field timeline with check-in windows and priority stops."
+                           Style="{StaticResource StylePageSubtitle}" />
+                </VerticalStackLayout>
+
+                <Border Style="{StaticResource StyleStatusStrip}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Route status" Style="{StaticResource StyleFieldLabel}" />
+                            <Label Text="Next stop in 28 minutes • 4 jobs scheduled" Style="{StaticResource StyleCaption}" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" Style="{StaticResource StyleInfoPill}">
+                            <Label Text="ON ROUTE"
+                                   FontFamily="{StaticResource FontFamilySemibold}"
+                                   FontSize="{StaticResource FontSizeTiny}"
+                                   TextColor="{AppThemeBinding Light={StaticResource ColorStatusInfoLight}, Dark={StaticResource ColorStatusInfoDark}}" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource StyleCardBorder}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Timeline" Style="{StaticResource StyleSectionHeader}" />
+                        <Border Style="{StaticResource StyleSoftPanel}">
+                            <VerticalStackLayout Spacing="10">
+                                <Label Text="09:30 • Generator inspection • Completed" />
+                                <Label Text="11:45 • Water pump calibration • In progress" />
+                                <Label Text="14:00 • AC compressor fault • High priority" />
+                                <Label Text="16:30 • Completion review • Pending" />
+                            </VerticalStackLayout>
+                        </Border>
+                        <Button Text="Open Assigned Jobs" Style="{StaticResource StyleCompactButton}" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+        <controls:RoleBottomNavigationBar Grid.Row="1" Role="Worker" ActiveItem="Schedule" />
+    </Grid>
+</ContentPage>

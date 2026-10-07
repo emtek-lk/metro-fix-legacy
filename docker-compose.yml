@@ -45,9 +45,11 @@ services:
     build:
       context: .
       dockerfile: web-portal/Dockerfile
-      args:
-        WEB_API_BASE_URL: http://localhost:${API_PORT:-5000}
     container_name: gtek-fsm-web-portal
+    environment:
+      # Runtime API base URL used by the frontend (generated into /config.json by the image entrypoint)
+      # This URL is consumed by the browser (Blazor WASM), so it must be browser-reachable.
+      API_BASE_URL: http://localhost:${API_PORT:-5001}
     ports:
       - "${WEB_PORTAL_PORT:-5101}:80"
     depends_on:

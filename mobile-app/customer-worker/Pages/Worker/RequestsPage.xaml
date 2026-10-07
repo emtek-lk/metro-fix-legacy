@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.RequestsPage"
              Title="Requests">
-       <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,24" Spacing="12">
-                     <Label Text="Requests" FontSize="28" FontAttributes="Bold" />
-                     <Label Text="Worker request lists will use the same simplified cards and muted surfaces as the rest of the app."
-                               TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="WORKER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="Requests" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Worker request lists will share the same mobile-first cards and muted operational surfaces."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-                     <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                            <VerticalStackLayout Spacing="10">
-                                   <Label Text="Coming Soon" FontSize="18" FontAttributes="Bold" />
-                                   <Label Text="No extra features are introduced here; this only establishes the simplified visual structure for future content."
-                                             TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                            </VerticalStackLayout>
-                     </Border>
-              </VerticalStackLayout>
-       </ScrollView>
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Border Style="{StaticResource StyleAccentPill}" HorizontalOptions="Start">
+                        <Label Text="COMING SOON" Style="{StaticResource StylePillLabel}" />
+                    </Border>
+                    <Label Text="Request queue" Style="{StaticResource StyleSectionHeader}" />
+                    <Label Text="No workflow has been removed; this view keeps the visual structure ready for future request queue content."
+                           Style="{StaticResource StyleMutedText}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Worker" ActiveItem="Assigned" />
+    </Grid>
 </ContentPage>

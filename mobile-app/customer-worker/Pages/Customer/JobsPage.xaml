@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Customer.JobsPage"
              Title="Jobs">
-       <ScrollView>
-              <VerticalStackLayout Padding="20,18,20,24" Spacing="12">
-                     <Label Text="Jobs" FontSize="28" FontAttributes="Bold" />
-                     <Label Text="Your active service work remains easy to scan with the simplified layout direction."
-                               TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <VerticalStackLayout Style="{StaticResource StylePageHeader}">
+                <Label Text="CUSTOMER" Style="{StaticResource StyleEyebrow}" />
+                <Label Text="Jobs" Style="{StaticResource StylePageTitle}" />
+                <Label Text="Your active service work remains easy to scan as more job detail content lands."
+                       Style="{StaticResource StylePageSubtitle}" />
+            </VerticalStackLayout>
 
-                     <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                            <VerticalStackLayout Spacing="10">
-                                   <Label Text="Coming Soon" FontSize="18" FontAttributes="Bold" />
-                                   <Label Text="Customer-facing job detail screens will reuse these same card and spacing rules when Phase 6 content lands."
-                                             TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                            </VerticalStackLayout>
-                     </Border>
-              </VerticalStackLayout>
-       </ScrollView>
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Border Style="{StaticResource StyleAccentPill}" HorizontalOptions="Start">
+                        <Label Text="NEXT PHASE" Style="{StaticResource StylePillLabel}" />
+                    </Border>
+                    <Label Text="Job detail workspace" Style="{StaticResource StyleSectionHeader}" />
+                    <Label Text="Customer-facing job detail screens will reuse the same card, spacing, and status treatment when Phase 6 content lands."
+                           Style="{StaticResource StyleMutedText}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Customer" ActiveItem="Jobs" />
+    </Grid>
 </ContentPage>

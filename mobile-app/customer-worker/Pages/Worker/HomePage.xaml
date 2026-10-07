@@ -1,80 +1,223 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GTEK.FSM.MobileApp.Controls"
              x:Class="GTEK.FSM.MobileApp.Pages.Worker.HomePage"
-             Title="Home">
-       <ScrollView>
-              <VerticalStackLayout Style="{StaticResource StylePageContainer}">
-                     <VerticalStackLayout Spacing="4">
-                            <Label Text="Worker Dispatch" Style="{StaticResource StylePageTitle}" />
-                            <Label Text="Review available jobs, accept assignments, and update field status fast." Style="{StaticResource StylePageSubtitle}" />
-                     </VerticalStackLayout>
+             Title="GTEK FSM">
+    <Grid RowDefinitions="*,Auto">
+    <ScrollView Grid.Row="0">
+        <VerticalStackLayout Style="{StaticResource StylePageContainer}">
+            <Border Style="{StaticResource StyleElevatedCardBorder}">
+                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="56,*,Auto" RowSpacing="4" ColumnSpacing="12">
+                    <Border WidthRequest="56"
+                            HeightRequest="56"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 18"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource ColorAccentBgLight}, Dark={StaticResource ColorAccentBgDark}}">
+                        <Label Text="W"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               FontSize="22"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="Field overview" Style="{StaticResource StyleCaption}" />
+                        <Label Text="Worker Dashboard" Style="{StaticResource StyleSectionHeader}" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="2" Style="{StaticResource StyleSuccessPill}" VerticalOptions="Center">
+                        <Label Text="ONLINE"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               FontSize="{StaticResource FontSizeTiny}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                    </Border>
+                    <Label Grid.Row="1"
+                           Grid.ColumnSpan="3"
+                           Text="Review available jobs, accept assignments, and update field status from a mobile-native dispatch workspace."
+                           Style="{StaticResource StyleMutedText}"
+                           Margin="0,10,0,0" />
+                </Grid>
+            </Border>
 
-                     <Border Style="{StaticResource StyleCardBorder}">
-                            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
-                                   <Label Text="Field overview" FontSize="20" FontAttributes="Bold" />
-                                   <Border Grid.Column="1"
-                                           StrokeThickness="0"
-                                           BackgroundColor="{AppThemeBinding Light=#EFFAF4, Dark=#365F4A}"
-                                           Padding="10,4"
-                                           VerticalOptions="Start">
-                                          <Label Text="ONLINE" FontSize="11" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#166534, Dark=#86EFAC}" />
-                                   </Border>
-                                   <Label Grid.Row="1"
-                                          Text="The clean layout keeps route and execution decisions visible at a glance."
-                                          TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                            </Grid>
-                     </Border>
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                <Border Style="{StaticResource StyleMetricCard}">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Available" Style="{StaticResource StyleCaption}" />
+                        <Label Text="5" FontSize="26" FontFamily="{StaticResource FontFamilySemibold}" />
+                        <Label Text="Queue" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
 
-                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <Border StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                                   <VerticalStackLayout Spacing="4">
-                                          <Label Text="Available" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                          <Label Text="5" FontSize="30" FontAttributes="Bold" />
-                                          <Label Text="2 high priority" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource ColorAccentLight}, Dark={StaticResource ColorAccentDark}}" />
-                                   </VerticalStackLayout>
-                            </Border>
-                            <Border Grid.Column="1" StrokeShape="RoundRectangle 18" Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource ColorBgSurfaceLight}, Dark={StaticResource ColorBgSurfaceDark}}">
-                                   <VerticalStackLayout Spacing="4">
-                                          <Label Text="Assigned" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource ColorTextMutedLight}, Dark={StaticResource ColorTextMutedDark}}" />
-                                          <Label Text="3" FontSize="30" FontAttributes="Bold" />
-                                          <Label Text="1 in progress" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource ColorAccentLight}, Dark={StaticResource ColorAccentDark}}" />
-                                   </VerticalStackLayout>
-                            </Border>
-                     </Grid>
+                <Border Grid.Column="1" Style="{StaticResource StyleMetricCard}">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Assigned" Style="{StaticResource StyleCaption}" />
+                        <Label Text="3" FontSize="26" FontFamily="{StaticResource FontFamilySemibold}" />
+                        <Label Text="Today" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
 
-                     <Border Style="{StaticResource StyleCardBorder}">
-                            <VerticalStackLayout Spacing="8">
-                                   <Label Text="Shift Notes" Style="{StaticResource StyleSectionHeader}" />
-                                   <Label Text="Job #JOB-884 requires access card at reception." />
-                                   <Label Text="Downtown route has heavy traffic after 3 PM." />
-                                   <Label Text="Safety check required before generator startup tasks." />
-                            </VerticalStackLayout>
-                     </Border>
+                <Border Grid.Column="2" Style="{StaticResource StyleMetricCard}">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Active" Style="{StaticResource StyleCaption}" />
+                        <Label Text="1" FontSize="26" FontFamily="{StaticResource FontFamilySemibold}" />
+                        <Label Text="Now" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
-                     <Border Style="{StaticResource StyleCardBorder}">
-                            <VerticalStackLayout Spacing="8">
-                                   <Label Text="Quick Actions" Style="{StaticResource StyleSectionHeader}" />
-                                   <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                          <Button Text="Accept Top"
-                                                  FontSize="12"
-                                                  Padding="8,6"
-                                                  Clicked="OnAcceptTopJobClicked" />
-                                          <Button Grid.Column="1"
-                                                  Text="Update Status"
-                                                  FontSize="12"
-                                                  Padding="8,6"
-                                                  Clicked="OnUpdateStatusClicked" />
-                                          <Button Grid.Column="2"
-                                                  Text="Call Dispatch"
-                                                  FontSize="12"
-                                                  Padding="8,6"
-                                                  Clicked="OnCallDispatchClicked" />
-                                   </Grid>
-                            </VerticalStackLayout>
-                     </Border>
+            <Border Style="{StaticResource StyleStatusStrip}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Field mode ready" Style="{StaticResource StyleFieldLabel}" />
+                        <Label Text="3 actions can queue offline • live dispatch connected" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" Style="{StaticResource StyleSuccessPill}" VerticalOptions="Center">
+                        <Label Text="SYNC"
+                               FontFamily="{StaticResource FontFamilySemibold}"
+                               FontSize="{StaticResource FontSizeTiny}"
+                               TextColor="{AppThemeBinding Light={StaticResource ColorStatusSuccessLight}, Dark={StaticResource ColorStatusSuccessDark}}" />
+                    </Border>
+                </Grid>
+            </Border>
 
-                     <Button Text="Open Jobs Workspace" Margin="0,4,0,0" Clicked="OnOpenJobsWorkspaceClicked" />
-              </VerticalStackLayout>
-       </ScrollView>
+            <Border Style="{StaticResource StyleCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Label Text="Today Schedule" Style="{StaticResource StyleSectionHeader}" />
+                        <Border Grid.Column="1" Style="{StaticResource StyleInfoPill}">
+                            <Label Text="4 STOPS"
+                                   FontFamily="{StaticResource FontFamilySemibold}"
+                                   FontSize="{StaticResource FontSizeTiny}"
+                                   TextColor="{AppThemeBinding Light={StaticResource ColorStatusInfoLight}, Dark={StaticResource ColorStatusInfoDark}}" />
+                        </Border>
+                    </Grid>
+                    <Border Style="{StaticResource StyleSoftPanel}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="09:30 • Generator inspection • Central Arcade" />
+                            <Label Text="11:45 • Water pump calibration • Palm Residency" />
+                            <Label Text="14:00 • AC compressor fault • Lakepoint Towers" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Button Text="Open Assigned Jobs"
+                            Clicked="OnOpenJobsWorkspaceClicked" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource StyleCardBorder}">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="10">
+                    <Label Text="Route Readiness" Style="{StaticResource StyleSectionHeader}" />
+                    <Border Grid.Column="1" Style="{StaticResource StyleAccentPill}">
+                        <Label Text="4/5" Style="{StaticResource StylePillLabel}" />
+                    </Border>
+                    <ProgressBar Grid.Row="1"
+                                 Grid.ColumnSpan="2"
+                                 Progress="0.8"
+                                 HeightRequest="6" />
+                    <Label Grid.Row="2"
+                           Grid.ColumnSpan="2"
+                           Text="Most assigned jobs are ready; one task still needs dispatch confirmation."
+                           Style="{StaticResource StyleMutedText}" />
+                </Grid>
+            </Border>
+
+            <Label Text="Quick Access" Style="{StaticResource StyleSectionHeader}" />
+
+            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" RowSpacing="12" ColumnSpacing="12">
+                <Border Style="{StaticResource StyleFeatureCard}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenJobsWorkspaceClicked" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="10">
+                        <Border Style="{StaticResource StyleIconBadge}">
+                            <Label Text="J" HorizontalOptions="Center" VerticalOptions="Center" FontFamily="{StaticResource FontFamilySemibold}" TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                        </Border>
+                        <Label Text="Jobs" Style="{StaticResource StyleCardTitle}" />
+                        <Label Text="Queue and assignments" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource StyleFeatureCard}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenRequestsClicked" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="10">
+                        <Border Style="{StaticResource StyleIconBadge}">
+                            <Label Text="R" HorizontalOptions="Center" VerticalOptions="Center" FontFamily="{StaticResource FontFamilySemibold}" TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                        </Border>
+                        <Label Text="Requests" Style="{StaticResource StyleCardTitle}" />
+                        <Label Text="Service request queue" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Row="1" Style="{StaticResource StyleFeatureCard}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenProfileClicked" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="10">
+                        <Border Style="{StaticResource StyleIconBadge}">
+                            <Label Text="P" HorizontalOptions="Center" VerticalOptions="Center" FontFamily="{StaticResource FontFamilySemibold}" TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                        </Border>
+                        <Label Text="Profile" Style="{StaticResource StyleCardTitle}" />
+                        <Label Text="Availability and contact" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource StyleFeatureCard}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenSettingsClicked" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="10">
+                        <Border Style="{StaticResource StyleIconBadge}">
+                            <Label Text="S" HorizontalOptions="Center" VerticalOptions="Center" FontFamily="{StaticResource FontFamilySemibold}" TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                        </Border>
+                        <Label Text="Settings" Style="{StaticResource StyleCardTitle}" />
+                        <Label Text="Account controls" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Row="2" Style="{StaticResource StyleFeatureCard}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnUpdateStatusClicked" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="10">
+                        <Border Style="{StaticResource StyleIconBadge}">
+                            <Label Text="U" HorizontalOptions="Center" VerticalOptions="Center" FontFamily="{StaticResource FontFamilySemibold}" TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                        </Border>
+                        <Label Text="Updates" Style="{StaticResource StyleCardTitle}" />
+                        <Label Text="Publish field status" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource StyleFeatureCard}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCallDispatchClicked" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="10">
+                        <Border Style="{StaticResource StyleIconBadge}">
+                            <Label Text="D" HorizontalOptions="Center" VerticalOptions="Center" FontFamily="{StaticResource FontFamilySemibold}" TextColor="{AppThemeBinding Light={StaticResource ColorAccentTextLight}, Dark={StaticResource ColorAccentTextDark}}" />
+                        </Border>
+                        <Label Text="Support" Style="{StaticResource StyleCardTitle}" />
+                        <Label Text="Contact dispatch" Style="{StaticResource StyleCaption}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource StyleCardBorder}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Shift Notes" Style="{StaticResource StyleSectionHeader}" />
+                    <Border Style="{StaticResource StyleSoftPanel}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Job #JOB-884 requires access card at reception." />
+                            <Label Text="Downtown route has heavy traffic after 3 PM." />
+                            <Label Text="Safety check required before generator startup tasks." />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Button Text="Accept Top Job"
+                            Clicked="OnAcceptTopJobClicked" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+    <controls:RoleBottomNavigationBar Grid.Row="1" Role="Worker" ActiveItem="Home" />
+    </Grid>
 </ContentPage>

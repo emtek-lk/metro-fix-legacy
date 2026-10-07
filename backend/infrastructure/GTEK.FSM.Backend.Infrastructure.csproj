@@ -26,6 +26,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);SA0001;SA1101;SA1118;SA1200;SA1204;SA1208;SA1210;SA1402;SA1408;SA1413;SA1507;SA1518;SA1649</NoWarn>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,6 +60,74 @@
   <ItemGroup>
     <EmbeddedResource Remove="**/*.resx" />
     <EmbeddedResource Remove="**\*.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Audit/EfAuditLogWriter.cs" />
+    <Compile Include="Configuration/DatabaseOptions.cs" />
+    <Compile Include="Configuration/ExternalServicesOptions.cs" />
+    <Compile Include="Configuration/SignalROptions.cs" />
+    <Compile Include="Configuration/StorageOptions.cs" />
+    <Compile Include="Decisioning/CachedRoadDistanceProvider.cs" />
+    <Compile Include="Decisioning/OsrmRoadDistanceProvider.cs" />
+    <Compile Include="DependencyInjection.cs" />
+    <Compile Include="Identity/AuthorizationDecisionAuditLogger.cs" />
+    <Compile Include="Identity/HttpContextAuthenticatedPrincipalAccessor.cs" />
+    <Compile Include="Identity/HttpContextTenantContextAccessor.cs" />
+    <Compile Include="Persistence/Configurations/FeedbackConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/JobConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/LocalCredentialConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/ServiceCategoryConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/ServiceRequestConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/ServiceRequestLifecycleStageConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/ServiceRequestLifecycleStageTransitionConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/ServiceRequestLifecycleTransitionConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/SubscriptionConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/TenantConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/UserConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/WorkerProfileConfiguration.cs" />
+    <Compile Include="Persistence/DesignTime/GtekFsmDbContextFactory.cs" />
+    <Compile Include="Persistence/GtekFsmDbContext.cs" />
+    <Compile Include="Persistence/Migrations/20260318161457_Phase1InitialSchema.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260318161457_Phase1InitialSchema.cs" />
+    <Compile Include="Persistence/Migrations/20260331122409_Phase3SubscriptionUserLimit.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260331122409_Phase3SubscriptionUserLimit.cs" />
+    <Compile Include="Persistence/Migrations/20260331220517_Phase3AuditLogTrail.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260331220517_Phase3AuditLogTrail.cs" />
+    <Compile Include="Persistence/Migrations/20260401000231_Phase3ServiceCategories.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260401000231_Phase3ServiceCategories.cs" />
+    <Compile Include="Persistence/Migrations/20260401004022_Phase3ConcurrencyTokens.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260401004022_Phase3ConcurrencyTokens.cs" />
+    <Compile Include="Persistence/Migrations/20260402162000_Phase9SlaEngine.cs" />
+    <Compile Include="Persistence/Migrations/20260403170822_Phase3ModelSync.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260403170822_Phase3ModelSync.cs" />
+    <Compile Include="Persistence/Migrations/20260405135122_Phase13LocalCredentialAuth.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260405135122_Phase13LocalCredentialAuth.cs" />
+    <Compile Include="Persistence/Migrations/20260412215604_Phase12FeedbackPipeline.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260412215604_Phase12FeedbackPipeline.cs" />
+    <Compile Include="Persistence/Migrations/20260413195904_Phase13RequestLifecycleConfig.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260413195904_Phase13RequestLifecycleConfig.cs" />
+    <Compile Include="Persistence/Migrations/20260416054914_Phase14LifecycleStagesConfig.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260416054914_Phase14LifecycleStagesConfig.cs" />
+    <Compile Include="Persistence/Migrations/20260416062942_Phase14RequestCurrentStageRuntime.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260416062942_Phase14RequestCurrentStageRuntime.cs" />
+    <Compile Include="Persistence/Migrations/GtekFsmDbContextModelSnapshot.cs" />
+    <Compile Include="Persistence/Repositories/AuditLogRepository.cs" />
+    <Compile Include="Persistence/Repositories/CategoryRepository.cs" />
+    <Compile Include="Persistence/Repositories/EfRepository.cs" />
+    <Compile Include="Persistence/Repositories/FeedbackRepository.cs" />
+    <Compile Include="Persistence/Repositories/JobRepository.cs" />
+    <Compile Include="Persistence/Repositories/ServiceRequestLifecycleStageRepository.cs" />
+    <Compile Include="Persistence/Repositories/ServiceRequestLifecycleStageTransitionRepository.cs" />
+    <Compile Include="Persistence/Repositories/ServiceRequestLifecycleTransitionRepository.cs" />
+    <Compile Include="Persistence/Repositories/ServiceRequestRepository.cs" />
+    <Compile Include="Persistence/Repositories/SubscriptionRepository.cs" />
+    <Compile Include="Persistence/Repositories/TenantRepository.cs" />
+    <Compile Include="Persistence/Repositories/UserRepository.cs" />
+    <Compile Include="Persistence/Repositories/WorkerProfileRepository.cs" />
+    <Compile Include="Persistence/Transactions/EfUnitOfWork.cs" />
+    <Compile Include="Persistence/Transactions/EfUnitOfWorkTransaction.cs" />
+    <Compile Include="Properties/InternalsVisibleTo.cs" />
   </ItemGroup>
 
 </Project>

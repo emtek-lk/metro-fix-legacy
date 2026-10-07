@@ -15,6 +15,9 @@ using WorkerSettingsPage = GTEK.FSM.MobileApp.Pages.Worker.SettingsPage;
 
 public partial class AppShell : Shell
 {
+    private MobileSectionVisibility availableSections = MobileSectionVisibility.Both;
+    private bool isWorkerWorkspace;
+
     public AppShell()
         : this(new SessionContextState())
     {
@@ -24,45 +27,109 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
 
-        // Customer routes
-        Routing.RegisterRoute("CustomerHome", typeof(CustomerHomePage));
-        Routing.RegisterRoute("CustomerRequests", typeof(CustomerRequestsPage));
-        Routing.RegisterRoute("CustomerJobs", typeof(CustomerJobsPage));
-        Routing.RegisterRoute("CustomerProfile", typeof(CustomerProfilePage));
-        Routing.RegisterRoute("CustomerSettings", typeof(CustomerSettingsPage));
-
-        // Worker routes
-        Routing.RegisterRoute("WorkerHome", typeof(WorkerHomePage));
-        Routing.RegisterRoute("WorkerRequests", typeof(WorkerRequestsPage));
-        Routing.RegisterRoute("WorkerJobs", typeof(WorkerJobsPage));
-        Routing.RegisterRoute("WorkerProfile", typeof(WorkerProfilePage));
-        Routing.RegisterRoute("WorkerSettings", typeof(WorkerSettingsPage));
-
-        ApplyRoleGate(sessionContextState);
+        this.ApplyRoleGate(sessionContextState);
+        UpdateThemeToolbarText();
     }
 
     private void ApplyRoleGate(SessionContextState sessionContextState)
     {
         var role = (sessionContextState.Role ?? string.Empty).Trim();
-        var visibility = RoleGateResolver.Resolve(role);
+        this.availableSections = RoleGateResolver.Resolve(role);
 
-        if (visibility == MobileSectionVisibility.WorkerOnly)
+        if (this.availableSections == MobileSectionVisibility.WorkerOnly)
         {
-            CustomerTab.IsVisible = false;
-            WorkerTab.IsVisible = true;
-            CurrentItem = WorkerTab;
+            this.RoleSwitchPanel.IsVisible = false;
+            this.ApplyWorkspace(isWorker: true, navigateHome: true);
             return;
         }
 
-        if (visibility == MobileSectionVisibility.CustomerOnly)
+        if (this.availableSections == MobileSectionVisibility.CustomerOnly)
         {
-            WorkerTab.IsVisible = false;
-            CustomerTab.IsVisible = true;
-            CurrentItem = CustomerTab;
+            this.RoleSwitchPanel.IsVisible = false;
+            this.ApplyWorkspace(isWorker: false, navigateHome: true);
             return;
         }
 
-        CustomerTab.IsVisible = true;
-        WorkerTab.IsVisible = true;
+        this.RoleSwitchPanel.IsVisible = true;
+        this.ApplyWorkspace(isWorker: false, navigateHome: true);
+    }
+
+    private void SetCustomerItemsVisible(bool isVisible)
+    {
+        CustomerHomeItem.IsVisible = isVisible;
+        CustomerRequestsItem.IsVisible = isVisible;
+        CustomerJobsItem.IsVisible = isVisible;
+        CustomerApprovalsItem.IsVisible = isVisible;
+        CustomerNotificationsItem.IsVisible = isVisible;
+        CustomerProfileItem.IsVisible = isVisible;
+        CustomerSettingsItem.IsVisible = isVisible;
+        CustomerSupportItem.IsVisible = isVisible;
+    }
+
+    private void SetWorkerItemsVisible(bool isVisible)
+    {
+        WorkerHomeItem.IsVisible = isVisible;
+        WorkerRequestsItem.IsVisible = isVisible;
+        WorkerScheduleItem.IsVisible = isVisible;
+        WorkerNotificationsItem.IsVisible = isVisible;
+        WorkerPerformanceItem.IsVisible = isVisible;
+        WorkerJobsItem.IsVisible = isVisible;
+        WorkerProfileItem.IsVisible = isVisible;
+        WorkerSettingsItem.IsVisible = isVisible;
+    }
+
+    private void OnCustomerRoleClicked(object sender, EventArgs e)
+    {
+        this.ApplyWorkspace(isWorker: false, navigateHome: true);
+    }
+
+    private void OnWorkerRoleClicked(object sender, EventArgs e)
+    {
+        this.ApplyWorkspace(isWorker: true, navigateHome: true);
+    }
+
+    private void ApplyWorkspace(bool isWorker, bool navigateHome)
+    {
+        this.isWorkerWorkspace = isWorker;
+        this.SetCustomerItemsVisible(!isWorker);
+        this.SetWorkerItemsVisible(isWorker);
+        this.UpdateRoleSwitchVisualState();
+
+        if (navigateHome)
+        {
+            CurrentItem = isWorker ? WorkerHomeItem : CustomerHomeItem;
+        }
+    }
+
+    private void UpdateRoleSwitchVisualState()
+    {
+        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        var activeBackground = isDark ? Color.FromArgb("#F7A642") : Color.FromArgb("#F38808");
+        var inactiveBackground = isDark ? Color.FromArgb("#182539") : Color.FromArgb("#F0F4F9");
+        var activeText = isDark ? Color.FromArgb("#090F1A") : Colors.White;
+        var inactiveText = isDark ? Color.FromArgb("#CAD6E5") : Color.FromArgb("#334155");
+
+        CustomerRoleButton.BackgroundColor = this.isWorkerWorkspace ? inactiveBackground : activeBackground;
+        CustomerRoleButton.TextColor = this.isWorkerWorkspace ? inactiveText : activeText;
+        CustomerRoleButton.Scale = this.isWorkerWorkspace ? 1 : 1.02;
+
+        WorkerRoleButton.BackgroundColor = this.isWorkerWorkspace ? activeBackground : inactiveBackground;
+        WorkerRoleButton.TextColor = this.isWorkerWorkspace ? activeText : inactiveText;
+        WorkerRoleButton.Scale = this.isWorkerWorkspace ? 1.02 : 1;
+        RoleBadgeLabel.Text = this.isWorkerWorkspace ? "WORKER" : "CUSTOMER";
+    }
+
+    private void OnToggleThemeClicked(object sender, EventArgs e)
+    {
+        var currentTheme = Application.Current?.UserAppTheme ?? AppTheme.Unspecified;
+        Application.Current!.UserAppTheme = currentTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
+        UpdateThemeToolbarText();
+        this.UpdateRoleSwitchVisualState();
+    }
+
+    private void UpdateThemeToolbarText()
+    {
+        var currentTheme = Application.Current?.UserAppTheme ?? AppTheme.Unspecified;
+        ThemeToolbarItem.Text = currentTheme == AppTheme.Dark ? "☀" : "☾";
     }
 }

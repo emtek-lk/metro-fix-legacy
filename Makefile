@@ -24,7 +24,6 @@ build-mobile:
 
 # Run targets
 run-api:
-	./deploy/scripts/run-api-standalone.sh
 
 run-portal:
 	./deploy/scripts/run-web-portal.sh
